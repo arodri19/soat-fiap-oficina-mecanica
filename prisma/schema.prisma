@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ATTENDANT
+  MECHANIC
+}
+
+enum OrderStatus {
+  RECEBIDA
+  EM_DIAGNOSTICO
+  AGUARDANDO_APROVACAO
+  EM_EXECUCAO
+  FINALIZADA
+  ENTREGUE
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+}
+
+model ClientPF {
+  id       Int            @id @default(autoincrement())
+  name     String
+  cpf      String         @unique
+  email    String
+  address  String
+  number   String
+  state    String
+  cep      String
+  vehicles Vehicle[]
+  orders   OrderService[]
+}
+
+model ClientPJ {
+  id               Int            @id @default(autoincrement())
+  name             String
+  fantasyName      String
+  companyName      String
+  cnpj             String         @unique
+  email            String
+  address          String
+  number           String
+  state            String
+  cep              String
+  legalResponsible String
+  orders           OrderService[]
+}
+
+model Vehicle {
+  id         Int            @id @default(autoincrement())
+  plate      String         @unique
+  model      String
+  year       Int
+  color      String
+  clientPF   ClientPF       @relation(fields: [clientPFId], references: [id])
+  clientPFId Int
+  orders     OrderService[]
+}
+
+model Service {
+  id            Int                 @id @default(autoincrement())
+  name          String
+  slaMinutes    Int
+  orderServices OrderServiceService[]
+}
+
+model Part {
+  id            Int                @id @default(autoincrement())
+  name          String
+  type          String
+  model         String
+  color         String
+  quantity      Int                @default(0)
+  orderServices OrderServicePart[]
+}
+
+model Budget {
+  id           Int            @id @default(autoincrement())
+  totalBudget  Float
+  orders       OrderService[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model OrderService {
+  id          Int                    @id @default(autoincrement())
+  externalId  String                 @default(uuid())
+  status      OrderStatus            @default(RECEBIDA)
+  description String
+  mechanicName String?
+  budgetValue Float?
+  startAt     DateTime?
+  endAt       DateTime?
+  updatedAt   DateTime               @updatedAt
+  clientPF    ClientPF?              @relation(fields: [clientPFId], references: [id])
+  clientPFId  Int?
+  clientPJ    ClientPJ?              @relation(fields: [clientPJId], references: [id])
+  clientPJId  Int?
+  vehicle     Vehicle                @relation(fields: [vehicleId], references: [id])
+  vehicleId   Int
+  budget      Budget?                @relation(fields: [budgetId], references: [id])
+  budgetId    Int?
+  services    OrderServiceService[]
+  parts       OrderServicePart[]
+}
+
+model OrderServiceService {
+  id             Int          @id @default(autoincrement())
+  orderService   OrderService @relation(fields: [orderServiceId], references: [id])
+  orderServiceId Int
+  service        Service      @relation(fields: [serviceId], references: [id])
+  serviceId      Int
+  createdAt      DateTime     @default(now())
+}
+
+model OrderServicePart {
+  id             Int          @id @default(autoincrement())
+  orderService   OrderService @relation(fields: [orderServiceId], references: [id])
+  orderServiceId Int
+  part           Part         @relation(fields: [partId], references: [id])
+  partId         Int
+  quantity       Int          @default(1)
+  createdAt      DateTime     @default(now())
+}
