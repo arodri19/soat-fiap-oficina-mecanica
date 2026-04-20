@@ -1,8 +1,6 @@
-const jwt = require('jsonwebtoken');
-const prisma = require('../prisma');
-const { hashPassword, comparePassword } = require('../utils/hash');
-const { JWT_SECRET } = require('../config');
+const container = require('../infrastructure/container/Container');
 const { validateEmail, validateString, validateEnum } = require('../utils/validation');
+const asyncHandler = require('../utils/asyncHandler');
 
 /**
  * @swagger
@@ -59,17 +57,16 @@ async function login(req, res) {
   const email = validateEmail(req.body.email, 'email');
   const password = validateString(req.body.password, 'password', { required: true, minLength: 6 });
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !(await comparePassword(password, user.password))) {
-    return res.status(401).json({ message: 'Credenciais inválidas.' });
+  try {
+    const authService = container.getAuthApplicationService();
+    const result = await authService.login(email, password);
+    return res.json(result);
+  } catch (error) {
+    if (error.message === 'Credenciais inválidas') {
+      return res.status(401).json({ message: error.message });
+    }
+    throw error;
   }
-
-  const token = jwt.sign(
-    { sub: user.id, email: user.email, role: user.role, name: user.name },
-    JWT_SECRET,
-    { expiresIn: '8h' }
-  );
-  return res.json({ token, user: { email: user.email, name: user.name, role: user.role } });
 }
 
 /**
@@ -135,15 +132,13 @@ async function register(req, res) {
   const password = validateString(req.body.password, 'password', { required: true, minLength: 6 });
   const role = validateEnum(req.body.role, 'role', ['ATTENDANT', 'MECHANIC']);
 
-  const hashedPassword = await hashPassword(password);
   try {
-    const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role }
-    });
-    return res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
+    const authService = container.getAuthApplicationService();
+    const result = await authService.register(name, email, password, role);
+    return res.status(201).json(result);
   } catch (error) {
-    if (error.code === 'P2002') {
-      return res.status(409).json({ message: 'Email já cadastrado.' });
+    if (error.message === 'Email já cadastrado') {
+      return res.status(409).json({ message: error.message });
     }
     throw error;
   }

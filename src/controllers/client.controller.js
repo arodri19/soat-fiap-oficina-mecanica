@@ -1,4 +1,5 @@
-const clientService = require('../services/client.service');
+const container = require('../infrastructure/container/Container');
+const asyncHandler = require('../utils/asyncHandler');
 
 /**
  * @swagger
@@ -54,7 +55,9 @@ const clientService = require('../services/client.service');
  *               $ref: '#/components/schemas/ClientPF'
  */
 async function createClientPF(req, res) {
-  const client = await clientService.createClientPF(req.body);
+  const clientApplicationService = container.getClientApplicationService();
+  const { name, cpf, email, address, number, state, cep } = req.body;
+  const client = await clientApplicationService.createClientPF(name, cpf, email, address, number, state, cep);
   return res.status(201).json(client);
 }
 
@@ -77,7 +80,8 @@ async function createClientPF(req, res) {
  *                 $ref: '#/components/schemas/ClientPF'
  */
 async function listClientsPF(req, res) {
-  const clients = await clientService.listClientsPF();
+  const clientApplicationService = container.getClientApplicationService();
+  const clients = await clientApplicationService.listClientsPF();
   return res.json(clients);
 }
 
@@ -107,9 +111,9 @@ async function listClientsPF(req, res) {
  *         description: Cliente PF não encontrado
  */
 async function getClientPF(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  const client = await clientService.getClientPF(id);
-  if (!client) return res.status(404).json({ message: 'Cliente PF não encontrado.' });
+  const client = await clientApplicationService.getClientPF(id);
   return res.json(client);
 }
 
@@ -168,8 +172,10 @@ async function getClientPF(req, res) {
  *         description: Cliente PF não encontrado
  */
 async function updateClientPF(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  const client = await clientService.updateClientPF(id, req.body);
+  const { name, email, address, number, state, cep } = req.body;
+  const client = await clientApplicationService.updateClientPF(id, name, email, address, number, state, cep);
   return res.json(client);
 }
 
@@ -195,10 +201,12 @@ async function updateClientPF(req, res) {
  *         description: Cliente PF não encontrado
  */
 async function deleteClientPF(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  await clientService.deleteClientPF(id);
+  await clientApplicationService.deleteClientPF(id);
   return res.status(204).send();
 }
+
 
 /**
  * @swagger
@@ -266,7 +274,9 @@ async function deleteClientPF(req, res) {
  *               $ref: '#/components/schemas/ClientPJ'
  */
 async function createClientPJ(req, res) {
-  const client = await clientService.createClientPJ(req.body);
+  const clientApplicationService = container.getClientApplicationService();
+  const { name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible } = req.body;
+  const client = await clientApplicationService.createClientPJ(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible);
   return res.status(201).json(client);
 }
 
@@ -289,7 +299,8 @@ async function createClientPJ(req, res) {
  *                 $ref: '#/components/schemas/ClientPJ'
  */
 async function listClientsPJ(req, res) {
-  const clients = await clientService.listClientsPJ();
+  const clientApplicationService = container.getClientApplicationService();
+  const clients = await clientApplicationService.listClientsPJ();
   return res.json(clients);
 }
 
@@ -319,9 +330,9 @@ async function listClientsPJ(req, res) {
  *         description: Cliente PJ não encontrado
  */
 async function getClientPJ(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  const client = await clientService.getClientPJ(id);
-  if (!client) return res.status(404).json({ message: 'Cliente PJ não encontrado.' });
+  const client = await clientApplicationService.getClientPJ(id);
   return res.json(client);
 }
 
@@ -389,8 +400,10 @@ async function getClientPJ(req, res) {
  *         description: Cliente PJ não encontrado
  */
 async function updateClientPJ(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  const client = await clientService.updateClientPJ(id, req.body);
+  const { name, fantasyName, companyName, email, address, number, state, cep, legalResponsible } = req.body;
+  const client = await clientApplicationService.updateClientPJ(id, name, fantasyName, companyName, email, address, number, state, cep, legalResponsible);
   return res.json(client);
 }
 
@@ -416,8 +429,9 @@ async function updateClientPJ(req, res) {
  *         description: Cliente PJ não encontrado
  */
 async function deleteClientPJ(req, res) {
+  const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
-  await clientService.deleteClientPJ(id);
+  await clientApplicationService.deleteClientPJ(id);
   return res.status(204).send();
 }
 
