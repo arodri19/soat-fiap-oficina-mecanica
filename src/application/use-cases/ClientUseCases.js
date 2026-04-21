@@ -1,11 +1,6 @@
 const { ClientPF, ClientPJ } = require('../../domain/entities/Client');
-const { CPF, CNPJ } = require('../../domain/value-objects/Document');
 const {
-  CreateClientPFRequestDTO,
-  UpdateClientPFRequestDTO,
   ClientPFResponseDTO,
-  CreateClientPJRequestDTO,
-  UpdateClientPJRequestDTO,
   ClientPJResponseDTO
 } = require('../dtos/ClientDTOs');
 

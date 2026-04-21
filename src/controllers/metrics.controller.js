@@ -1,4 +1,4 @@
-const prisma = require('../prisma');
+const metricsService = require('../services/metrics.service');
 
 /**
  * @swagger
@@ -25,19 +25,26 @@ const prisma = require('../prisma');
  *                   type: integer
  *                   example: 10
  *                   description: Número total de ordens finalizadas
+ *                 byService:
+ *                   type: array
+ *                   description: Média de tempo por tipo de serviço
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       service:
+ *                         type: string
+ *                         example: "Troca de Óleo"
+ *                       averageMinutes:
+ *                         type: number
+ *                         format: float
+ *                         example: 60.0
+ *                       ordersCount:
+ *                         type: integer
+ *                         example: 5
  */
 async function getAverageExecutionTime(req, res) {
-  const orders = await prisma.orderService.findMany({
-    where: { startAt: { not: null }, endAt: { not: null } },
-    select: { startAt: true, endAt: true }
-  });
-  if (!orders.length) {
-    return res.json({ averageMinutes: 0, totalOrders: 0 });
-  }
-  const totalMinutes = orders.reduce((sum, order) => {
-    return sum + (order.endAt.getTime() - order.startAt.getTime()) / 60000;
-  }, 0);
-  return res.json({ averageMinutes: totalMinutes / orders.length, totalOrders: orders.length });
+  const result = await metricsService.getAverageExecutionTime();
+  return res.json(result);
 }
 
 module.exports = {

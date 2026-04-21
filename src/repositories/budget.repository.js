@@ -14,8 +14,7 @@ async function createBudget(totalBudget, orderIds) {
           vehicle: true,
           clientPF: true,
           clientPJ: true,
-          services: { include: { service: true } },
-          parts: { include: { part: true } }
+          services: { include: { service: true, parts: { include: { part: true } } } }
         }
       }
     }
@@ -31,8 +30,7 @@ async function getBudget(id) {
           vehicle: true,
           clientPF: true,
           clientPJ: true,
-          services: { include: { service: true } },
-          parts: { include: { part: true } }
+          services: { include: { service: true, parts: { include: { part: true } } } }
         }
       }
     }
@@ -47,8 +45,7 @@ async function listBudgets() {
           vehicle: true,
           clientPF: true,
           clientPJ: true,
-          services: { include: { service: true } },
-          parts: { include: { part: true } }
+          services: { include: { service: true, parts: { include: { part: true } } } }
         }
       }
     }
@@ -65,8 +62,7 @@ async function updateBudget(id, data) {
           vehicle: true,
           clientPF: true,
           clientPJ: true,
-          services: { include: { service: true } },
-          parts: { include: { part: true } }
+          services: { include: { service: true, parts: { include: { part: true } } } }
         }
       }
     }

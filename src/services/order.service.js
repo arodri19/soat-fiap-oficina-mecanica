@@ -74,7 +74,7 @@ async function addServiceToOrder(id, serviceId, budgetValue) {
   });
 }
 
-async function addPartToOrder(id, partId, quantity) {
+async function addPartToOrder(id, orderServiceServiceId, partId, quantity) {
   const order = await orderRepository.findOrder(id);
   if (!order) return null;
 
@@ -92,7 +92,7 @@ async function addPartToOrder(id, partId, quantity) {
   const updatedPart = await partRepository.updatePart(part.id, {
     quantity: currentPart.quantity - validated.quantity
   });
-  const orderPart = await orderRepository.addPartToOrder(id, part.id, validated.quantity);
+  const orderPart = await orderRepository.addPartToOrder(orderServiceServiceId, part.id, validated.quantity);
 
   return { orderPart, part: updatedPart };
 }

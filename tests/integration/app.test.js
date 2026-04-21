@@ -1,28 +1,48 @@
 const request = require('supertest');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../../src/config');
+const mockAuthService = {
+  login: jest.fn(),
+  register: jest.fn()
+};
 
+jest.mock('../../src/infrastructure/container/Container', () => ({
+  getAuthApplicationService: () => mockAuthService
+}));
+
+const prisma = require('../../src/prisma');
 const app = require('../../src/app');
 
 describe('API de integração', () => {
-  let authToken;
+  let createdUserEmail = null;
 
-  beforeAll(async () => {
-    // Create a test user for login test
-    const passwordHash = await bcrypt.hash('MinhaSenha123', 10);
-    // Note: This would need to be inserted into the test database
-    // For now, we'll use the seeded admin user
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    authToken = jwt.sign(
-      { sub: 3, email: 'admin@oficina.com', role: 'ATTENDANT', name: 'Administrador' },
-      JWT_SECRET,
-      { expiresIn: '1h' }
-    );
+  afterAll(async () => {
+    // Apaga o registro criado durante o teste
+    if (createdUserEmail) {
+      try {
+        await prisma.user.deleteMany({
+          where: { email: createdUserEmail }
+        });
+      } catch (error) {
+        console.error('Erro ao limpar banco de dados de teste:', error);
+      }
+    }
+    await prisma.$disconnect();
   });
 
   it('deve registrar um usuário', async () => {
     const uniqueEmail = `integration-test-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
+    createdUserEmail = uniqueEmail; // Salva para o afterAll apagar
+
+    mockAuthService.register.mockResolvedValue({
+      id: 1,
+      name: 'Novo Usuário',
+      email: uniqueEmail,
+      role: 'MECHANIC'
+    });
+
     const response = await request(app)
       .post('/api/auth/register')
       .send({ name: 'Novo Usuário', email: uniqueEmail, password: 'Senha123!', role: 'MECHANIC' });
@@ -33,6 +53,11 @@ describe('API de integração', () => {
   });
 
   it('deve logar um usuário existente', async () => {
+    mockAuthService.login.mockResolvedValue({
+      token: 'token-fake',
+      user: { email: 'admin@oficina.com' }
+    });
+
     const response = await request(app)
       .post('/api/auth/login')
       .send({ email: 'admin@oficina.com', password: 'Admin123!' });

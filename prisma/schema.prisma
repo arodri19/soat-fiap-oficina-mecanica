@@ -41,6 +41,8 @@ model ClientPF {
   cep      String
   vehicles Vehicle[]
   orders   OrderService[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
 
 model ClientPJ {
@@ -56,6 +58,8 @@ model ClientPJ {
   cep              String
   legalResponsible String
   orders           OrderService[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 model Vehicle {
@@ -82,8 +86,8 @@ model Part {
   type          String
   model         String
   color         String
-  quantity      Int                @default(0)
-  orderServices OrderServicePart[]
+  quantity             Int                       @default(0)
+  orderServiceServices OrderServiceServicePart[]
 }
 
 model Budget {
@@ -113,24 +117,24 @@ model OrderService {
   budget      Budget?                @relation(fields: [budgetId], references: [id])
   budgetId    Int?
   services    OrderServiceService[]
-  parts       OrderServicePart[]
 }
 
 model OrderServiceService {
-  id             Int          @id @default(autoincrement())
-  orderService   OrderService @relation(fields: [orderServiceId], references: [id])
+  id             Int                       @id @default(autoincrement())
+  orderService   OrderService              @relation(fields: [orderServiceId], references: [id], onDelete: Cascade)
   orderServiceId Int
-  service        Service      @relation(fields: [serviceId], references: [id])
+  service        Service                   @relation(fields: [serviceId], references: [id])
   serviceId      Int
-  createdAt      DateTime     @default(now())
+  parts          OrderServiceServicePart[]
+  createdAt      DateTime                  @default(now())
 }
 
-model OrderServicePart {
-  id             Int          @id @default(autoincrement())
-  orderService   OrderService @relation(fields: [orderServiceId], references: [id])
-  orderServiceId Int
-  part           Part         @relation(fields: [partId], references: [id])
-  partId         Int
-  quantity       Int          @default(1)
-  createdAt      DateTime     @default(now())
+model OrderServiceServicePart {
+  id                      Int                 @id @default(autoincrement())
+  orderServiceService     OrderServiceService @relation(fields: [orderServiceServiceId], references: [id], onDelete: Cascade)
+  orderServiceServiceId   Int
+  part                    Part                @relation(fields: [partId], references: [id])
+  partId                  Int
+  quantity                Int                 @default(1)
+  createdAt               DateTime            @default(now())
 }

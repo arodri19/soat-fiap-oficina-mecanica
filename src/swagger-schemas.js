@@ -169,10 +169,10 @@
  *         quantity:
  *           type: integer
  *           example: 10
- *         orderServices:
+ *         orderServiceServices:
  *           type: array
  *           items:
- *             $ref: '#/components/schemas/OrderServicePart'
+ *             $ref: '#/components/schemas/OrderServiceServicePart'
  *
  *     OrderService:
  *       type: object
@@ -228,10 +228,7 @@
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/OrderServiceService'
- *         parts:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/OrderServicePart'
+
  *
  *     OrderServiceService:
  *       type: object
@@ -253,14 +250,18 @@
  *           $ref: '#/components/schemas/OrderService'
  *         service:
  *           $ref: '#/components/schemas/Service'
+ *         parts:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/OrderServiceServicePart'
  *
- *     OrderServicePart:
+ *     OrderServiceServicePart:
  *       type: object
  *       properties:
  *         id:
  *           type: integer
  *           example: 1
- *         orderServiceId:
+ *         orderServiceServiceId:
  *           type: integer
  *           example: 1
  *         partId:
@@ -273,8 +274,8 @@
  *           type: string
  *           format: date-time
  *           example: "2024-01-15T10:00:00Z"
- *         orderService:
- *           $ref: '#/components/schemas/OrderService'
+ *         orderServiceService:
+ *           $ref: '#/components/schemas/OrderServiceService'
  *         part:
  *           $ref: '#/components/schemas/Part'
  *

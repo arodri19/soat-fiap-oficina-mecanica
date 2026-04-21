@@ -10,8 +10,7 @@ async function listOrders() {
       vehicle: true,
       clientPF: true,
       clientPJ: true,
-      services: { include: { service: true } },
-      parts: { include: { part: true } }
+      services: { include: { service: true, parts: { include: { part: true } } } }
     }
   });
 }
@@ -23,8 +22,7 @@ async function getOrder(id) {
       vehicle: true,
       clientPF: true,
       clientPJ: true,
-      services: { include: { service: true } },
-      parts: { include: { part: true } }
+      services: { include: { service: true, parts: { include: { part: true } } } }
     }
   });
 }
@@ -41,8 +39,8 @@ async function addServiceToOrder(orderServiceId, serviceId) {
   return prisma.orderServiceService.create({ data: { orderServiceId, serviceId } });
 }
 
-async function addPartToOrder(orderServiceId, partId, quantity) {
-  return prisma.orderServicePart.create({ data: { orderServiceId, partId, quantity } });
+async function addPartToOrder(orderServiceServiceId, partId, quantity) {
+  return prisma.orderServiceServicePart.create({ data: { orderServiceServiceId, partId, quantity } });
 }
 
 async function findOrdersByIds(ids) {
@@ -52,8 +50,7 @@ async function findOrdersByIds(ids) {
       vehicle: true,
       clientPF: true,
       clientPJ: true,
-      services: { include: { service: true } },
-      parts: { include: { part: true } }
+      services: { include: { service: true, parts: { include: { part: true } } } }
     }
   });
 }

@@ -118,7 +118,7 @@ npm run test:integration
 A documentação interativa da API está disponível em:
 
 ```
-http://localhost:4001/api-docs
+http://localhost:4000/api-docs
 ```
 
 Acesse esta URL no navegador para explorar todos os endpoints com Swagger UI.

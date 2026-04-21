@@ -248,6 +248,9 @@ async function addServiceToOrder(req, res) {
  *             required:
  *               - partId
  *             properties:
+ *               orderServiceServiceId:
+ *                 type: integer
+ *                 example: 1
  *               partId:
  *                 type: integer
  *                 example: 1
@@ -273,10 +276,11 @@ async function addServiceToOrder(req, res) {
  */
 async function addPartToOrder(req, res) {
   const id = Number(req.params.id);
-  const { partId, quantity } = req.body;
+  const { orderServiceServiceId, partId, quantity } = req.body;
+  if (!orderServiceServiceId) return res.status(400).json({ message: 'ID do serviço da ordem (orderServiceServiceId) é obrigatório.' });
   if (!partId) return res.status(400).json({ message: 'ID da peça é obrigatório.' });
 
-  const result = await orderService.addPartToOrder(id, partId, quantity);
+  const result = await orderService.addPartToOrder(id, orderServiceServiceId, partId, quantity);
   if (!result) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   if (result.error === 'PART_NOT_FOUND') return res.status(404).json({ message: 'Peça não encontrada.' });
   return res.json(result);
