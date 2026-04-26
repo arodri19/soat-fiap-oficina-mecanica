@@ -4,7 +4,7 @@ async function getAverageExecutionTime() {
   const orders = await metricsRepository.listFinishedOrdersExecutionWindow();
 
   if (!orders.length) {
-    return { averageMinutes: 0, totalOrders: 0, byService: [] };
+    return { averageMinutes: 0, averageHours: 0, totalOrders: 0, byService: [] };
   }
 
   let totalMinutes = 0;
@@ -26,14 +26,21 @@ async function getAverageExecutionTime() {
     }
   });
 
-  const byService = Object.entries(serviceStats).map(([name, stats]) => ({
-    service: name,
-    averageMinutes: stats.total / stats.count,
-    ordersCount: stats.count
-  }));
+  const byService = Object.entries(serviceStats).map(([name, stats]) => {
+    const avgMins = stats.total / stats.count;
+    return {
+      service: name,
+      averageMinutes: Number(avgMins.toFixed(2)),
+      averageHours: Number((avgMins / 60).toFixed(2)),
+      ordersCount: stats.count
+    };
+  });
 
-  return { 
-    averageMinutes: totalMinutes / orders.length, 
+  const overallAvgMins = totalMinutes / orders.length;
+
+  return {
+    averageMinutes: Number(overallAvgMins.toFixed(2)),
+    averageHours: Number((overallAvgMins / 60).toFixed(2)),
     totalOrders: orders.length,
     byService
   };

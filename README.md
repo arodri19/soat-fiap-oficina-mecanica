@@ -25,6 +25,18 @@ Backend em Node.js/Express com PostgreSQL e Prisma para uma oficina mecânica.
 - Docker Compose
 - Jest
 
+## Arquitetura e Decisões Técnicas
+
+### Banco de Dados: PostgreSQL
+
+Com base no **ADR 0001**, o **PostgreSQL** foi escolhido como banco de dados principal do sistema. A justificativa fundamenta-se nos seguintes pontos:
+- **Modelo Relacional e Integridade de Dados:** O domínio exige uma estrutura fortemente relacionada (Cliente -> Veículo -> Ordem de Serviço -> Orçamento). O PostgreSQL assegura essa integridade através de chaves estrangeiras e restrições.
+- **Confiabilidade e Transações (ACID):** Operações críticas no sistema, como a sincronização de orçamentos e ordens de serviço, exigem atomicidade (operações seguras all-or-nothing).
+- **Sinergia com Prisma ORM:** O PostgreSQL possui integração otimizada com o Prisma, facilitando o versionamento do banco de dados via migrations e queries seguras e tipadas.
+- **Maturidade e Desempenho:** É uma solução Open Source madura que provê performance e recursos de consultas avançadas para as métricas da oficina.
+
+Para mais detalhes, consulte o [ADR 0001: Uso do PostgreSQL](docs/adr/0001-uso-de-postgresql-como-banco-de-dados.md).
+
 ## Como usar
 
 ### 1. Instalar dependências
@@ -49,11 +61,19 @@ O backend estará disponível em `http://localhost:4001`.
 
 ### 4. Gerar Prisma Client e rodar migrações
 
-Com o banco ativo, rode:
+O sistema utiliza o Prisma ORM para gerenciar o esquema e as migrações (versionamento) do banco de dados, o que garante previsibilidade nas mudanças de estrutura.
+
+Com o banco de dados ativo, execute os comandos abaixo para gerar o cliente de tipagem e aplicar a estrutura no banco:
 
 ```bash
+# Gera os tipos do Prisma Client
 npx prisma generate
-npx prisma migrate dev --name init
+
+# Aplica as migrações ao banco de dados no ambiente de desenvolvimento
+npx prisma migrate dev
+
+# (Opcional) Para aplicar migrações sem prompts interativos em ambientes de CI/CD ou Produção:
+# npx prisma migrate deploy
 ```
 
 ### 5. Criar usuário padrão (Seed)
@@ -113,8 +133,9 @@ Testes de integração:
 npm run test:integration
 ```
 
-## Documentação da API
+## Documentação e Exemplos da API
 
+### Swagger UI
 A documentação interativa da API está disponível em:
 
 ```
@@ -122,6 +143,22 @@ http://localhost:4000/api-docs
 ```
 
 Acesse esta URL no navegador para explorar todos os endpoints com Swagger UI.
+
+### Exemplos de Requisições (.http)
+Para facilitar os testes rápidos e manuais diretamente pelo seu editor de código (como o VS Code), todos os exemplos de payloads e chamadas para os endpoints estão prontos e disponíveis na pasta `requests/` na raiz do projeto.
+
+A pasta conta com arquivos separados por entidade:
+- `01-auth.http` (Login e Registro)
+- `02-clients.http` (PF e PJ)
+- `03-vehicles.http`
+- `04-services.http`
+- `05-parts.http`
+- `06-orders.http`
+- `07-budgets.http`
+- `08-metrics.http`
+
+**Como testar:**
+Basta instalar a extensão **REST Client** no VS Code e clicar em `Send Request` logo acima das rotas nos arquivos. Lembre-se de primeiro realizar o login em `01-auth.http` e copiar o JWT retornado para a variável `@token` nos demais arquivos. Você também pode importá-los em ferramentas como Insomnia ou Postman.
 
 ## Observações
 

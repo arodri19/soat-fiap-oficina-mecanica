@@ -94,9 +94,18 @@ async function main() {
     });
 
     for (let j = 1; j <= 5; j++) {
-      const startHour = 8 + j;
-      const startAt = new Date(`2023-10-0${i}T${startHour.toString().padStart(2, '0')}:00:00Z`);
-      const endAt = new Date(startAt.getTime() + (j * 1.5 * 60 * 60 * 1000));
+      // Dia aleatório entre 4 e 28 (para garantir que seja após a criação do orçamento)
+      const randomDay = Math.floor(Math.random() * 25) + 4;
+      // Hora aleatória entre 8 e 17
+      const randomHour = Math.floor(Math.random() * 10) + 8;
+      // Minuto aleatório entre 0 e 59
+      const randomMinute = Math.floor(Math.random() * 60);
+
+      const startAt = new Date(`2023-10-${randomDay.toString().padStart(2, '0')}T${randomHour.toString().padStart(2, '0')}:${randomMinute.toString().padStart(2, '0')}:00Z`);
+      
+      // Duração totalmente aleatória (entre 1 hora e 24 horas)
+      const durationHours = (Math.random() * 23) + 1;
+      const endAt = new Date(startAt.getTime() + (durationHours * 60 * 60 * 1000));
 
       await prisma.orderService.create({
         data: {

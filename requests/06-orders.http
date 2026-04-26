@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:4001/api
+@token = INSIRA_O_TOKEN_AQUI
+
+### Listar Ordens de Serviço
+GET {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+
+### Criar Ordem de Serviço
+POST {{baseUrl}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "description": "Revisão geral de 10.000km",
+  "clientPFId": "ID_DO_CLIENTE_AQUI",
+  "vehicleId": "ID_DO_VEICULO_AQUI"
+}
+
+### Atualizar Status da Ordem
+PATCH {{baseUrl}}/orders/ID_DA_ORDEM/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "APROVADA"
+}
+
+### Associar Serviço à Ordem
+POST {{baseUrl}}/orders/ID_DA_ORDEM/service
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "serviceId": "ID_DO_SERVICO_AQUI"
+}
+
+### Associar Peça à Ordem
+POST {{baseUrl}}/orders/ID_DA_ORDEM/part
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "partId": "ID_DA_PECA_AQUI",
+  "quantity": 1
+}
+
+### Progresso da Ordem
+GET {{baseUrl}}/orders/ID_DA_ORDEM/progress
+Authorization: Bearer {{token}}
