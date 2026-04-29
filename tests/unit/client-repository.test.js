@@ -1,4 +1,3 @@
-const path = require('path');
 const jestMock = require('jest-mock');
 const mockPrisma = {
   clientPF: {
@@ -20,9 +19,9 @@ const mockPrisma = {
 jest.unmock('../../src/prisma');
 jest.mock('../../src/prisma', () => mockPrisma);
 
-const PrismaClientRepository = require(path.join(__dirname, '../../src/infrastructure/repositories/PrismaClientRepository'));
-const { ClientPF, ClientPJ } = require(path.join(__dirname, '../../src/domain/entities/Client'));
-const { CPF, CNPJ } = require(path.join(__dirname, '../../src/domain/value-objects/Document'));
+const PrismaClientRepository = require('../../src/infrastructure/repositories/PrismaClientRepository');
+const { ClientPF, ClientPJ } = require('../../src/domain/entities/Client');
+const { CPF, CNPJ } = require('../../src/domain/value-objects/Document');
 
 describe('PrismaClientRepository', () => {
   let repository;

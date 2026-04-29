@@ -1,11 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('Iniciando seed do banco de dados...');
-
+async function clearDatabase() {
   // Limpar tabelas para evitar duplicidade (ordem importa por causa das foreign keys)
   await prisma.orderServiceServicePart.deleteMany();
   await prisma.orderServiceService.deleteMany();
@@ -15,13 +14,14 @@ async function main() {
   await prisma.clientPF.deleteMany();
   await prisma.part.deleteMany();
   await prisma.service.deleteMany();
+}
 
-  // 1. Usuário padrão
+async function seedAdminUser() {
   const existingUser = await prisma.user.findUnique({
     where: { email: 'admin@oficina.com' }
   });
 
-  if (!existingUser) {
+  if (existingUser === null) {
     const hashedPassword = await bcrypt.hash('Admin123!', 10);
     const user = await prisma.user.create({
       data: {
@@ -35,8 +35,9 @@ async function main() {
   } else {
     console.log('Usuário padrão já existe.');
   }
+}
 
-  // 2. Serviços (3 exemplos)
+async function seedServices() {
   const servico1 = await prisma.service.create({
     data: { name: 'Troca de Óleo', slaMinutes: 60 }
   });
@@ -47,8 +48,10 @@ async function main() {
     data: { name: 'Revisão Completa', slaMinutes: 240 }
   });
   console.log('3 Serviços criados.');
+  return { servico1, servico2, servico3 };
+}
 
-  // 3. Peças (3 exemplos)
+async function seedParts() {
   const peca1 = await prisma.part.create({
     data: { name: 'Óleo de Motor 5W40', type: 'Óleo', model: 'Sintético', color: 'N/A', quantity: 50 }
   });
@@ -59,8 +62,10 @@ async function main() {
     data: { name: 'Pastilha de Freio', type: 'Freio', model: 'Cerâmica', color: 'N/A', quantity: 20 }
   });
   console.log('3 Peças criadas.');
+  return { peca1, peca2, peca3 };
+}
 
-  // 4. Clientes PF (3 exemplos)
+async function seedClients() {
   const cliente1 = await prisma.clientPF.create({
     data: { name: 'João Silva', cpf: '111.222.333-44', email: 'joao@example.com', address: 'Rua A', number: '123', state: 'SP', cep: '01000-000' }
   });
@@ -71,40 +76,58 @@ async function main() {
     data: { name: 'Carlos Souza', cpf: '999.888.777-66', email: 'carlos@example.com', address: 'Rua C', number: '789', state: 'MG', cep: '30000-000' }
   });
   console.log('3 Clientes PF criados.');
+  return { cliente1, cliente2, cliente3 };
+}
 
-  // 5. Veículos (3 exemplos)
+async function seedVehicles(clientes) {
   const veiculo1 = await prisma.vehicle.create({
-    data: { plate: 'ABC-1234', model: 'Honda Civic', year: 2020, color: 'Prata', clientPFId: cliente1.id }
+    data: { plate: 'ABC-1234', model: 'Honda Civic', year: 2020, color: 'Prata', clientPFId: clientes.cliente1.id }
   });
   const veiculo2 = await prisma.vehicle.create({
-    data: { plate: 'DEF-5678', model: 'Toyota Corolla', year: 2021, color: 'Preto', clientPFId: cliente2.id }
+    data: { plate: 'DEF-5678', model: 'Toyota Corolla', year: 2021, color: 'Preto', clientPFId: clientes.cliente2.id }
   });
   const veiculo3 = await prisma.vehicle.create({
-    data: { plate: 'GHI-9012', model: 'VW Nivus', year: 2022, color: 'Branco', clientPFId: cliente3.id }
+    data: { plate: 'GHI-9012', model: 'VW Nivus', year: 2022, color: 'Branco', clientPFId: clientes.cliente3.id }
   });
   console.log('3 Veículos criados.');
+  return { veiculo1, veiculo2, veiculo3 };
+}
 
-  // 6 e 7. Orçamentos e Ordens de Serviço (3 orçamentos com 5 ordens cada, todas finalizadas)
+async function seedBudgetsAndOrders(clientes, veiculos, servicos, pecas) {
   for (let i = 1; i <= 3; i++) {
     const budget = await prisma.budget.create({
       data: {
-        totalBudget: 1000.00 * i,
+        totalBudget: 1000 * i,
         createdAt: new Date(`2023-10-0${i}T09:00:00Z`)
       }
     });
 
+    let currentClientPFId;
+    let currentVehicleId;
+
+    if (i === 1) {
+      currentClientPFId = clientes.cliente1.id;
+      currentVehicleId = veiculos.veiculo1.id;
+    } else if (i === 2) {
+      currentClientPFId = clientes.cliente2.id;
+      currentVehicleId = veiculos.veiculo2.id;
+    } else {
+      currentClientPFId = clientes.cliente3.id;
+      currentVehicleId = veiculos.veiculo3.id;
+    }
+
     for (let j = 1; j <= 5; j++) {
       // Dia aleatório entre 4 e 28 (para garantir que seja após a criação do orçamento)
-      const randomDay = Math.floor(Math.random() * 25) + 4;
+      const randomDay = crypto.randomInt(4, 29);
       // Hora aleatória entre 8 e 17
-      const randomHour = Math.floor(Math.random() * 10) + 8;
+      const randomHour = crypto.randomInt(8, 18);
       // Minuto aleatório entre 0 e 59
-      const randomMinute = Math.floor(Math.random() * 60);
+      const randomMinute = crypto.randomInt(0, 60);
 
       const startAt = new Date(`2023-10-${randomDay.toString().padStart(2, '0')}T${randomHour.toString().padStart(2, '0')}:${randomMinute.toString().padStart(2, '0')}:00Z`);
-      
-      // Duração totalmente aleatória (entre 1 hora e 24 horas)
-      const durationHours = (Math.random() * 23) + 1;
+
+      // Duração aleatória (entre 1 hora e 24 horas)
+      const durationHours = crypto.randomInt(1, 25);
       const endAt = new Date(startAt.getTime() + (durationHours * 60 * 60 * 1000));
 
       await prisma.orderService.create({
@@ -112,19 +135,19 @@ async function main() {
           status: 'FINALIZADA',
           description: `Serviço de manutenção ${i}.${j}`,
           mechanicName: j % 2 === 0 ? 'Roberto Mecânico' : 'Marcos Silva',
-          budgetValue: 200.00 * j,
+          budgetValue: 200 * j,
           startAt: startAt,
           endAt: endAt,
-          clientPFId: i === 1 ? cliente1.id : i === 2 ? cliente2.id : cliente3.id,
-          vehicleId: i === 1 ? veiculo1.id : i === 2 ? veiculo2.id : veiculo3.id,
+          clientPFId: currentClientPFId,
+          vehicleId: currentVehicleId,
           budgetId: budget.id,
           services: {
             create: [
               {
-                serviceId: j % 2 === 0 ? servico1.id : servico2.id,
+                serviceId: j % 2 === 0 ? servicos.servico1.id : servicos.servico2.id,
                 parts: {
                   create: [
-                    { partId: peca1.id, quantity: 1 }
+                    { partId: pecas.peca1.id, quantity: 1 }
                   ]
                 }
               }
@@ -134,8 +157,20 @@ async function main() {
       });
     }
   }
-
   console.log('3 Orçamentos e 15 Ordens de Serviço (5 para cada orçamento) criados e finalizados.');
+}
+
+async function main() {
+  console.log('Iniciando seed do banco de dados...');
+
+  await clearDatabase();
+  await seedAdminUser();
+  const servicos = await seedServices();
+  const pecas = await seedParts();
+  const clientes = await seedClients();
+  const veiculos = await seedVehicles(clientes);
+  await seedBudgetsAndOrders(clientes, veiculos, servicos, pecas);
+
   console.log('Seed do banco de dados concluído com sucesso!');
 }
 

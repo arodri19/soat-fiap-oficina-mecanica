@@ -57,8 +57,8 @@ class ClientApplicationService {
     await this.deleteClientPFUseCase.execute(id);
   }
 
-  async createClientPJ(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible) {
-    const request = new CreateClientPJRequestDTO(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible);
+  async createClientPJ(clientData) {
+    const request = CreateClientPJRequestDTO.create(clientData);
     return await this.createClientPJUseCase.execute(request);
   }
 
@@ -70,8 +70,8 @@ class ClientApplicationService {
     return await this.listClientsPJUseCase.execute();
   }
 
-  async updateClientPJ(id, name, fantasyName, companyName, email, address, number, state, cep, legalResponsible) {
-    const request = new UpdateClientPJRequestDTO(name, fantasyName, companyName, email, address, number, state, cep, legalResponsible);
+  async updateClientPJ(id, clientData) {
+    const request = UpdateClientPJRequestDTO.create(clientData);
     return await this.updateClientPJUseCase.execute(id, request);
   }
 

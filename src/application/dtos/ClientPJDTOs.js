@@ -1,7 +1,7 @@
 const { CNPJ } = require('../../domain/value-objects/Document');
 
 class CreateClientPJRequestDTO {
-  constructor(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible) {
+  constructor({ name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible }) {
     this.name = name;
     this.fantasyName = fantasyName;
     this.companyName = companyName;
@@ -15,23 +15,12 @@ class CreateClientPJRequestDTO {
   }
 
   static create(data) {
-    return new CreateClientPJRequestDTO(
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      data.cnpj,
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible
-    );
+    return new CreateClientPJRequestDTO(data);
   }
 }
 
 class UpdateClientPJRequestDTO {
-  constructor(name, fantasyName, companyName, email, address, number, state, cep, legalResponsible) {
+  constructor({ name, fantasyName, companyName, email, address, number, state, cep, legalResponsible }) {
     this.name = name;
     this.fantasyName = fantasyName;
     this.companyName = companyName;
@@ -44,17 +33,7 @@ class UpdateClientPJRequestDTO {
   }
 
   static create(data) {
-    return new UpdateClientPJRequestDTO(
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible
-    );
+    return new UpdateClientPJRequestDTO(data);
   }
 }
 
@@ -73,6 +52,10 @@ class ClientPJResponseDTO {
     this.legalResponsible = client.legalResponsible;
     this.createdAt = client.createdAt;
     this.updatedAt = client.updatedAt;
+  }
+
+  static create(client) {
+    return new ClientPJResponseDTO(client);
   }
 }
 

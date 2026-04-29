@@ -1,7 +1,6 @@
-const path = require('path');
-const ClientApplicationService = require(path.join(__dirname, '../../src/application/services/ClientApplicationService'));
-const { ClientPF, ClientPJ } = require(path.join(__dirname, '../../src/domain/entities/Client'));
-const { CPF, CNPJ } = require(path.join(__dirname, '../../src/domain/value-objects/Document'));
+const ClientApplicationService = require('../../src/application/services/ClientApplicationService');
+const { ClientPF, ClientPJ } = require('../../src/domain/entities/Client');
+const { CPF, CNPJ } = require('../../src/domain/value-objects/Document');
 
 describe('ClientApplicationService', () => {
   let mockRepository;
@@ -118,7 +117,7 @@ describe('ClientApplicationService', () => {
       mockRepository.findClientPJByCNPJ.mockResolvedValue(null);
       mockRepository.createClientPJ.mockResolvedValue(savedClient);
 
-      const result = await service.createClientPJ('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', '12345678000123', 'contato@empresa.com', 'Av. Paulista', '1000', 'SP', '01310100', 'João Silva');
+      const result = await service.createClientPJ({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: '12345678000123', email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
 
       expect(mockRepository.createClientPJ).toHaveBeenCalled();
       expect(result.id).toBe(1);
@@ -174,7 +173,7 @@ describe('ClientApplicationService', () => {
       mockRepository.findClientPJById.mockResolvedValue(existingClient);
       mockRepository.updateClientPJ.mockResolvedValue(updatedClient);
 
-      const result = await service.updateClientPJ(1, 'Empresa XYZ Atualizada', 'contato@empresa.com', '11999999999', 'Av. Paulista, 1000', 'João Silva');
+      const result = await service.updateClientPJ(1, { name: 'Empresa XYZ Atualizada', email: 'contato@empresa.com', address: 'Av. Paulista, 1000', legalResponsible: 'João Silva' });
 
       expect(mockRepository.updateClientPJ).toHaveBeenCalled();
       expect(result.companyName).toBe('Empresa XYZ Atualizada');

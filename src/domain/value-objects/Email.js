@@ -14,7 +14,7 @@ class Email {
     if (!email || typeof email !== 'string' || email.trim() === '') {
       return false;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]{1,255}@[^\s@]{1,255}\.[^\s@]{1,255}$/;
     return emailRegex.test(email.trim());
   }
 

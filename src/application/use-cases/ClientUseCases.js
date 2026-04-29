@@ -128,7 +128,7 @@ class CreateClientPJUseCase {
     );
 
     const savedClient = await this.clientRepository.createClientPJ(client);
-    return new ClientPJResponseDTO(savedClient);
+    return ClientPJResponseDTO.create(savedClient);
   }
 }
 
@@ -143,7 +143,7 @@ class GetClientPJUseCase {
       throw new Error('Cliente não encontrado');
     }
 
-    return new ClientPJResponseDTO(client);
+    return ClientPJResponseDTO.create(client);
   }
 }
 
@@ -154,7 +154,7 @@ class ListClientsPJUseCase {
 
   async execute() {
     const clients = await this.clientRepository.listClientsPJ();
-    return clients.map(client => new ClientPJResponseDTO(client));
+    return clients.map(client => ClientPJResponseDTO.create(client));
   }
 }
 
@@ -183,7 +183,7 @@ class UpdateClientPJUseCase {
     );
 
     const savedClient = await this.clientRepository.updateClientPJ(id, updatedClient);
-    return new ClientPJResponseDTO(savedClient);
+    return ClientPJResponseDTO.create(savedClient);
   }
 }
 

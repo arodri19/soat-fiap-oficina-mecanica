@@ -276,7 +276,7 @@ async function deleteClientPF(req, res) {
 async function createClientPJ(req, res) {
   const clientApplicationService = container.getClientApplicationService();
   const { name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible } = req.body;
-  const client = await clientApplicationService.createClientPJ(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible);
+  const client = await clientApplicationService.createClientPJ({ name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible });
   return res.status(201).json(client);
 }
 
@@ -403,7 +403,7 @@ async function updateClientPJ(req, res) {
   const clientApplicationService = container.getClientApplicationService();
   const id = Number(req.params.id);
   const { name, fantasyName, companyName, email, address, number, state, cep, legalResponsible } = req.body;
-  const client = await clientApplicationService.updateClientPJ(id, name, fantasyName, companyName, email, address, number, state, cep, legalResponsible);
+  const client = await clientApplicationService.updateClientPJ(id, { name, fantasyName, companyName, email, address, number, state, cep, legalResponsible });
   return res.json(client);
 }
 

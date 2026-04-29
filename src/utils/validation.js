@@ -48,7 +48,7 @@ function validateNumber(value, fieldName, options = {}) {
 
 function validateEmail(value, fieldName) {
   const email = validateString(value, fieldName, { required: true });
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailPattern = /^[^\s@]{1,255}@[^\s@]{1,255}\.[^\s@]{1,255}$/;
   if (!emailPattern.test(email)) {
     throw new ValidationError(`${fieldName} deve ser um email válido.`);
   }

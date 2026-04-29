@@ -193,18 +193,18 @@ describe('Client Use Cases', () => {
       mockRepository.findClientPJByCNPJ.mockResolvedValue(null);
       mockRepository.createClientPJ.mockResolvedValue(savedClient);
 
-      const request = new CreateClientPJRequestDTO(
-        'Empresa XYZ',
-        'Empresa XYZ Ltda',
-        'Empresa XYZ Ltda',
-        '12345678000123',
-        'contato@empresa.com',
-        'Av. Paulista',
-        '1000',
-        'SP',
-        '01310100',
-        'João Silva'
-      );
+      const request = new CreateClientPJRequestDTO({
+        name: 'Empresa XYZ',
+        fantasyName: 'Empresa XYZ Ltda',
+        companyName: 'Empresa XYZ Ltda',
+        cnpj: '12345678000123',
+        email: 'contato@empresa.com',
+        address: 'Av. Paulista',
+        number: '1000',
+        state: 'SP',
+        cep: '01310100',
+        legalResponsible: 'João Silva'
+      });
 
       const result = await useCase.execute(request);
 

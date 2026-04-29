@@ -1,4 +1,3 @@
-const path = require('path');
 const {
   CreateClientPFRequestDTO,
   UpdateClientPFRequestDTO,
@@ -6,9 +5,9 @@ const {
   CreateClientPJRequestDTO,
   UpdateClientPJRequestDTO,
   ClientPJResponseDTO
-} = require(path.join(__dirname, '../../src/application/dtos/ClientDTOs'));
-const { ClientPF, ClientPJ } = require(path.join(__dirname, '../../src/domain/entities/Client'));
-const { CPF, CNPJ } = require(path.join(__dirname, '../../src/domain/value-objects/Document'));
+} = require('../../src/application/dtos/ClientDTOs');
+const { ClientPF, ClientPJ } = require('../../src/domain/entities/Client');
+const { CPF, CNPJ } = require('../../src/domain/value-objects/Document');
 
 describe('Client DTOs', () => {
   describe('CreateClientPFRequestDTO', () => {
