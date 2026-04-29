@@ -16,10 +16,10 @@ function buildOrderData(body) {
 
   return {
     description: validateString(body.description, 'description'),
-    mechanicName: body.mechanicName !== undefined ? validateString(body.mechanicName, 'mechanicName', { required: false }) : undefined,
+    mechanicName: body.mechanicName === undefined ? undefined : validateString(body.mechanicName, 'mechanicName', { required: false }),
     vehicleId: validateNumber(body.vehicleId, 'vehicleId', { required: true, integer: true }),
-    clientPFId: body.clientPFId !== undefined ? validateNumber(body.clientPFId, 'clientPFId', { required: false, integer: true }) : undefined,
-    clientPJId: body.clientPJId !== undefined ? validateNumber(body.clientPJId, 'clientPJId', { required: false, integer: true }) : undefined,
+    clientPFId: body.clientPFId === undefined ? undefined : validateNumber(body.clientPFId, 'clientPFId', { required: false, integer: true }),
+    clientPJId: body.clientPJId === undefined ? undefined : validateNumber(body.clientPJId, 'clientPJId', { required: false, integer: true }),
     startAt: validateDate(body.startAt, 'startAt'),
     endAt: validateDate(body.endAt, 'endAt')
   };
@@ -65,14 +65,14 @@ function buildOrderProgress(order) {
 function validateServiceToOrder(body) {
   return {
     serviceId: validateNumber(body.serviceId, 'serviceId', { required: true, integer: true }),
-    budgetValue: body.budgetValue !== undefined ? validateNumber(body.budgetValue, 'budgetValue', { required: false, min: 0 }) : undefined
+    budgetValue: body.budgetValue === undefined ? undefined : validateNumber(body.budgetValue, 'budgetValue', { required: false, min: 0 })
   };
 }
 
 function validatePartToOrder(body) {
   return {
     partId: validateNumber(body.partId, 'partId', { required: true, integer: true }),
-    quantity: validateNumber(body.quantity !== undefined ? body.quantity : 1, 'quantity', { required: true, integer: true, min: 1 })
+    quantity: validateNumber(body.quantity === undefined ? 1 : body.quantity, 'quantity', { required: true, integer: true, min: 1 })
   };
 }
 

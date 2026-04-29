@@ -18,18 +18,18 @@ class CreateClientPFUseCase {
       throw new Error('CPF já cadastrado');
     }
 
-    const client = ClientPF.create(
-      request.name,
+    const client = ClientPF.create({
+      name: request.name,
       cpf,
-      request.email,
-      request.address,
-      request.number,
-      request.state,
-      request.cep
-    );
+      email: request.email,
+      address: request.address,
+      number: request.number,
+      state: request.state,
+      cep: request.cep
+    });
 
     const savedClient = await this.clientRepository.createClientPF(client);
-    return new ClientPFResponseDTO(savedClient);
+    return ClientPFResponseDTO.create(savedClient);
   }
 }
 
@@ -44,7 +44,7 @@ class GetClientPFUseCase {
       throw new Error('Cliente não encontrado');
     }
 
-    return new ClientPFResponseDTO(client);
+    return ClientPFResponseDTO.create(client);
   }
 }
 
@@ -55,7 +55,7 @@ class ListClientsPFUseCase {
 
   async execute() {
     const clients = await this.clientRepository.listClientsPF();
-    return clients.map(client => new ClientPFResponseDTO(client));
+    return clients.map(client => ClientPFResponseDTO.create(client));
   }
 }
 
@@ -70,18 +70,18 @@ class UpdateClientPFUseCase {
       throw new Error('Cliente não encontrado');
     }
 
-    const updatedClient = ClientPF.create(
-      request.name || existingClient.name,
-      existingClient.cpf,
-      request.email || existingClient.email,
-      request.address || existingClient.address,
-      request.number || existingClient.number,
-      request.state || existingClient.state,
-      request.cep || existingClient.cep
-    );
+    const updatedClient = ClientPF.create({
+      name: request.name || existingClient.name,
+      cpf: existingClient.cpf,
+      email: request.email || existingClient.email,
+      address: request.address || existingClient.address,
+      number: request.number || existingClient.number,
+      state: request.state || existingClient.state,
+      cep: request.cep || existingClient.cep
+    });
 
     const savedClient = await this.clientRepository.updateClientPF(id, updatedClient);
-    return new ClientPFResponseDTO(savedClient);
+    return ClientPFResponseDTO.create(savedClient);
   }
 }
 
@@ -114,18 +114,18 @@ class CreateClientPJUseCase {
       throw new Error('CNPJ já cadastrado');
     }
 
-    const client = ClientPJ.create(
-      request.name,
-      request.fantasyName,
-      request.companyName,
+    const client = ClientPJ.create({
+      name: request.name,
+      fantasyName: request.fantasyName,
+      companyName: request.companyName,
       cnpj,
-      request.email,
-      request.address,
-      request.number,
-      request.state,
-      request.cep,
-      request.legalResponsible
-    );
+      email: request.email,
+      address: request.address,
+      number: request.number,
+      state: request.state,
+      cep: request.cep,
+      legalResponsible: request.legalResponsible
+    });
 
     const savedClient = await this.clientRepository.createClientPJ(client);
     return ClientPJResponseDTO.create(savedClient);
@@ -169,18 +169,18 @@ class UpdateClientPJUseCase {
       throw new Error('Cliente não encontrado');
     }
 
-    const updatedClient = ClientPJ.create(
-      request.name || existingClient.name,
-      request.fantasyName || existingClient.fantasyName,
-      request.companyName || existingClient.companyName,
-      existingClient.cnpj,
-      request.email || existingClient.email,
-      request.address || existingClient.address,
-      request.number || existingClient.number,
-      request.state || existingClient.state,
-      request.cep || existingClient.cep,
-      request.legalResponsible || existingClient.legalResponsible
-    );
+    const updatedClient = ClientPJ.create({
+      name: request.name || existingClient.name,
+      fantasyName: request.fantasyName || existingClient.fantasyName,
+      companyName: request.companyName || existingClient.companyName,
+      cnpj: existingClient.cnpj,
+      email: request.email || existingClient.email,
+      address: request.address || existingClient.address,
+      number: request.number || existingClient.number,
+      state: request.state || existingClient.state,
+      cep: request.cep || existingClient.cep,
+      legalResponsible: request.legalResponsible || existingClient.legalResponsible
+    });
 
     const savedClient = await this.clientRepository.updateClientPJ(id, updatedClient);
     return ClientPJResponseDTO.create(savedClient);

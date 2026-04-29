@@ -59,6 +59,10 @@ class ClientPFResponseDTO {
     this.createdAt = client.createdAt;
     this.updatedAt = client.updatedAt;
   }
+
+  static create(client) {
+    return new ClientPFResponseDTO(client);
+  }
 }
 
 module.exports = {

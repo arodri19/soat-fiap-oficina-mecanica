@@ -70,7 +70,7 @@ async function addServiceToOrder(id, serviceId, budgetValue) {
 
   await orderRepository.addServiceToOrder(id, validated.serviceId);
   return orderRepository.updateOrder(id, {
-    budgetValue: validated.budgetValue !== undefined ? validated.budgetValue : order.budgetValue
+    budgetValue: validated.budgetValue === undefined ? order.budgetValue : validated.budgetValue
   });
 }
 

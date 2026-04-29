@@ -23,11 +23,9 @@ const container = require('../../../src/infrastructure/container/Container');
 
 describe('Auth Controller Integration', () => {
   let mockAuthService;
-  let mockUserRepository;
 
   beforeEach(() => {
     mockAuthService = container.getAuthApplicationService();
-    mockUserRepository = container.getUserRepository();
     jest.clearAllMocks();
   });
 

@@ -1,5 +1,5 @@
 class ClientPF {
-  constructor(id, name, cpf, email, address, number, state, cep, createdAt, updatedAt) {
+  constructor({ id, name, cpf, email, address, number, state, cep, createdAt, updatedAt }) {
     this.id = id;
     this.name = name;
     this.cpf = cpf;
@@ -12,13 +12,13 @@ class ClientPF {
     this.updatedAt = updatedAt;
   }
 
-  static create(name, cpf, email, address, number, state, cep) {
+  static create({ name, cpf, email, address, number, state, cep }) {
     if (!name || !cpf || !email) {
       throw new Error('Nome, CPF e email são obrigatórios');
     }
 
-    return new ClientPF(
-      null,
+    return new ClientPF({
+      id: null,
       name,
       cpf,
       email,
@@ -26,12 +26,12 @@ class ClientPF {
       number,
       state,
       cep,
-      new Date(),
-      new Date()
-    );
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
   }
 
-  update(name, email, address, number, state, cep) {
+  update({ name, email, address, number, state, cep }) {
     if (name) this.name = name;
     if (email) this.email = email;
     if (address) this.address = address;
@@ -43,13 +43,13 @@ class ClientPF {
 
   isValidCPF() {
     // Basic CPF validation (simplified)
-    const cpf = this.cpf.replace(/\D/g, '');
+    const cpf = this.cpf.replaceAll(/\D/g, '');
     return cpf.length === 11;
   }
 }
 
 class ClientPJ {
-  constructor(id, name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible, createdAt, updatedAt) {
+  constructor({ id, name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible, createdAt, updatedAt }) {
     this.id = id;
     this.name = name;
     this.fantasyName = fantasyName;
@@ -65,13 +65,13 @@ class ClientPJ {
     this.updatedAt = updatedAt;
   }
 
-  static create(name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible) {
+  static create({ name, fantasyName, companyName, cnpj, email, address, number, state, cep, legalResponsible }) {
     if (!companyName || !cnpj || !email) {
       throw new Error('Razão social, CNPJ e email são obrigatórios');
     }
 
-    return new ClientPJ(
-      null,
+    return new ClientPJ({
+      id: null,
       name,
       fantasyName,
       companyName,
@@ -82,12 +82,12 @@ class ClientPJ {
       state,
       cep,
       legalResponsible,
-      new Date(),
-      new Date()
-    );
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
   }
 
-  update(name, fantasyName, companyName, email, address, number, state, cep, legalResponsible) {
+  update({ name, fantasyName, companyName, email, address, number, state, cep, legalResponsible }) {
     if (name) this.name = name;
     if (fantasyName) this.fantasyName = fantasyName;
     if (companyName) this.companyName = companyName;
@@ -102,7 +102,7 @@ class ClientPJ {
 
   isValidCNPJ() {
     // Basic CNPJ validation (simplified)
-    const cnpj = this.cnpj.replace(/\D/g, '');
+    const cnpj = this.cnpj.replaceAll(/\D/g, '');
     return cnpj.length === 14;
   }
 }

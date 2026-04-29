@@ -17,18 +17,18 @@ class PrismaClientRepository extends IClientRepository {
       }
     });
 
-    return new ClientPF(
-      data.id,
-      data.name,
-      new CPF(data.cpf),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPF({
+      id: data.id,
+      name: data.name,
+      cpf: new CPF(data.cpf),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async findClientPFById(id) {
@@ -39,18 +39,18 @@ class PrismaClientRepository extends IClientRepository {
 
     if (!data) return null;
 
-    return new ClientPF(
-      data.id,
-      data.name,
-      new CPF(data.cpf),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPF({
+      id: data.id,
+      name: data.name,
+      cpf: new CPF(data.cpf),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async findClientPFByCPF(cpf) {
@@ -60,18 +60,18 @@ class PrismaClientRepository extends IClientRepository {
 
     if (!data) return null;
 
-    return new ClientPF(
-      data.id,
-      data.name,
-      new CPF(data.cpf),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPF({
+      id: data.id,
+      name: data.name,
+      cpf: new CPF(data.cpf),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async listClientsPF() {
@@ -80,18 +80,18 @@ class PrismaClientRepository extends IClientRepository {
       orderBy: { createdAt: 'desc' }
     });
 
-    return data.map(item => new ClientPF(
-      item.id,
-      item.name,
-      new CPF(item.cpf),
-      item.email,
-      item.address,
-      item.number,
-      item.state,
-      item.cep,
-      item.createdAt,
-      item.updatedAt
-    ));
+    return data.map(item => new ClientPF({
+      id: item.id,
+      name: item.name,
+      cpf: new CPF(item.cpf),
+      email: item.email,
+      address: item.address,
+      number: item.number,
+      state: item.state,
+      cep: item.cep,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    }));
   }
 
   async updateClientPF(id, client) {
@@ -108,18 +108,18 @@ class PrismaClientRepository extends IClientRepository {
       data: updateData
     });
 
-    return new ClientPF(
-      data.id,
-      data.name,
-      new CPF(data.cpf),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPF({
+      id: data.id,
+      name: data.name,
+      cpf: new CPF(data.cpf),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async deleteClientPF(id) {
@@ -142,21 +142,21 @@ class PrismaClientRepository extends IClientRepository {
       }
     });
 
-    return new ClientPJ(
-      data.id,
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      new CNPJ(data.cnpj),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPJ({
+      id: data.id,
+      name: data.name,
+      fantasyName: data.fantasyName,
+      companyName: data.companyName,
+      cnpj: new CNPJ(data.cnpj),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      legalResponsible: data.legalResponsible,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async findClientPJById(id) {
@@ -164,21 +164,21 @@ class PrismaClientRepository extends IClientRepository {
 
     if (!data) return null;
 
-    return new ClientPJ(
-      data.id,
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      new CNPJ(data.cnpj),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPJ({
+      id: data.id,
+      name: data.name,
+      fantasyName: data.fantasyName,
+      companyName: data.companyName,
+      cnpj: new CNPJ(data.cnpj),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      legalResponsible: data.legalResponsible,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async findClientPJByCNPJ(cnpj) {
@@ -188,21 +188,21 @@ class PrismaClientRepository extends IClientRepository {
 
     if (!data) return null;
 
-    return new ClientPJ(
-      data.id,
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      new CNPJ(data.cnpj),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPJ({
+      id: data.id,
+      name: data.name,
+      fantasyName: data.fantasyName,
+      companyName: data.companyName,
+      cnpj: new CNPJ(data.cnpj),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      legalResponsible: data.legalResponsible,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async listClientsPJ() {
@@ -210,21 +210,21 @@ class PrismaClientRepository extends IClientRepository {
       orderBy: { createdAt: 'desc' }
     });
 
-    return data.map(item => new ClientPJ(
-      item.id,
-      item.name,
-      item.fantasyName,
-      item.companyName,
-      new CNPJ(item.cnpj),
-      item.email,
-      item.address,
-      item.number,
-      item.state,
-      item.cep,
-      item.legalResponsible,
-      item.createdAt,
-      item.updatedAt
-    ));
+    return data.map(item => new ClientPJ({
+      id: item.id,
+      name: item.name,
+      fantasyName: item.fantasyName,
+      companyName: item.companyName,
+      cnpj: new CNPJ(item.cnpj),
+      email: item.email,
+      address: item.address,
+      number: item.number,
+      state: item.state,
+      cep: item.cep,
+      legalResponsible: item.legalResponsible,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    }));
   }
 
   async updateClientPJ(id, client) {
@@ -244,21 +244,21 @@ class PrismaClientRepository extends IClientRepository {
       data: updateData
     });
 
-    return new ClientPJ(
-      data.id,
-      data.name,
-      data.fantasyName,
-      data.companyName,
-      new CNPJ(data.cnpj),
-      data.email,
-      data.address,
-      data.number,
-      data.state,
-      data.cep,
-      data.legalResponsible,
-      data.createdAt,
-      data.updatedAt
-    );
+    return new ClientPJ({
+      id: data.id,
+      name: data.name,
+      fantasyName: data.fantasyName,
+      companyName: data.companyName,
+      cnpj: new CNPJ(data.cnpj),
+      email: data.email,
+      address: data.address,
+      number: data.number,
+      state: data.state,
+      cep: data.cep,
+      legalResponsible: data.legalResponsible,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt
+    });
   }
 
   async deleteClientPJ(id) {

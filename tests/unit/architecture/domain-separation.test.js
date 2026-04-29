@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function listJsFilesRecursively(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -58,7 +58,7 @@ describe('Arquitetura - separação de domínios/camadas', () => {
     });
 
     prismaConsumers.forEach((filePath) => {
-      const normalized = filePath.replace(/\\/g, '/');
+      const normalized = filePath.replaceAll('\\', '/');
       const isAllowed =
         normalized.includes('/src/repositories/') ||
         normalized.endsWith('/src/prisma.js');

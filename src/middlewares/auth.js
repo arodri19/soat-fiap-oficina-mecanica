@@ -3,7 +3,7 @@ const { JWT_SECRET } = require('../config');
 
 function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Token necessário para autenticação.' });
   }
 
@@ -13,6 +13,7 @@ function authenticate(req, res, next) {
     req.user = payload;
     next();
   } catch (error) {
+    console.warn(`[Auth Middleware] JWT verification failed: ${error.message}`);
     return res.status(401).json({ message: 'Token inválido.' });
   }
 }

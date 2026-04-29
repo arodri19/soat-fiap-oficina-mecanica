@@ -31,6 +31,10 @@ class AuthResponseDTO {
       role: user.role
     };
   }
+
+  static create(token, user) {
+    return new AuthResponseDTO(token, user);
+  }
 }
 
 class UserResponseDTO {
@@ -39,6 +43,10 @@ class UserResponseDTO {
     this.name = user.name;
     this.email = user.email.toString();
     this.role = user.role;
+  }
+
+  static create(user) {
+    return new UserResponseDTO(user);
   }
 }
 

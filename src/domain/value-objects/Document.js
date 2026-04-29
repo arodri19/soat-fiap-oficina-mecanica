@@ -3,7 +3,7 @@ class CPF {
     if (!this.isValid(value)) {
       throw new Error('CPF inválido');
     }
-    this.value = value.replace(/\D/g, '');
+    this.value = value.replaceAll(/\D/g, '');
   }
 
   static create(value) {
@@ -12,7 +12,7 @@ class CPF {
 
   isValid(cpf) {
     if (!cpf) return false;
-    const cleaned = cpf.replace(/\D/g, '');
+    const cleaned = cpf.replaceAll(/\D/g, '');
     if (cleaned.length !== 11) return false;
 
     // Basic validation - check if all digits are the same
@@ -35,7 +35,7 @@ class CNPJ {
     if (!this.isValid(value)) {
       throw new Error('CNPJ inválido');
     }
-    this.value = value.replace(/\D/g, '');
+    this.value = value.replaceAll(/\D/g, '');
   }
 
   static create(value) {
@@ -44,7 +44,7 @@ class CNPJ {
 
   isValid(cnpj) {
     if (!cnpj) return false;
-    const cleaned = cnpj.replace(/\D/g, '');
+    const cleaned = cnpj.replaceAll(/\D/g, '');
     if (cleaned.length !== 14) return false;
 
     // Basic validation - check if all digits are the same

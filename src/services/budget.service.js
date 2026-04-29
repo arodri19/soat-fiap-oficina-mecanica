@@ -3,7 +3,7 @@ const orderRepository = require('../repositories/order.repository');
 const { ValidationError } = require('../utils/validation');
 
 async function createBudget(orderIds) {
-  const ids = orderIds.map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0);
+  const ids = orderIds.map(Number).filter((id) => Number.isInteger(id) && id > 0);
   if (!ids.length) {
     throw new ValidationError('orderIds deve conter IDs válidos.');
   }

@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const request = require('supertest');
 const mockAuthService = {
   login: jest.fn(),
@@ -33,7 +34,8 @@ describe('API de integração', () => {
   });
 
   it('deve registrar um usuário', async () => {
-    const uniqueEmail = `integration-test-${Date.now()}-${Math.floor(Math.random() * 10000)}@test.com`;
+    const randomSuffix = crypto.randomInt(0, 10000);
+    const uniqueEmail = `integration-test-${Date.now()}-${randomSuffix}@test.com`;
     createdUserEmail = uniqueEmail; // Salva para o afterAll apagar
 
     mockAuthService.register.mockResolvedValue({

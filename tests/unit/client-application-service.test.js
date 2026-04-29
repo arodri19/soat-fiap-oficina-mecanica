@@ -27,7 +27,7 @@ describe('ClientApplicationService', () => {
 
   describe('createClientPF', () => {
     it('should create client PF successfully', async () => {
-      const client = ClientPF.create('João Silva', new CPF('12345678901'), 'joao@email.com', 'Rua A', '123', 'SP', '12345678');
+      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       const savedClient = { ...client, id: 1 };
 
       mockRepository.findClientPFByCPF.mockResolvedValue(null);
@@ -43,7 +43,7 @@ describe('ClientApplicationService', () => {
   describe('getClientPF', () => {
     it('should get client PF successfully', async () => {
       const cpf = new CPF('12345678901');
-      const client = ClientPF.create('João Silva', cpf, 'joao@email.com', 'Rua A', '123', 'SP', '12345678');
+      const client = ClientPF.create({ name: 'João Silva', cpf, email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       client.id = 1;
 
       mockRepository.findClientPFById.mockResolvedValue(client);
@@ -60,10 +60,10 @@ describe('ClientApplicationService', () => {
   describe('listClientsPF', () => {
     it('should list all clients PF', async () => {
       const cpf1 = new CPF('12345678901');
-      const client1 = ClientPF.create('João Silva', cpf1, 'joao@email.com', 'Rua A', '123', 'SP', '12345678');
+      const client1 = ClientPF.create({ name: 'João Silva', cpf: cpf1, email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       client1.id = 1;
       const cpf2 = new CPF('98765432100');
-      const client2 = ClientPF.create('Maria Santos', cpf2, 'maria@email.com', 'Rua B', '456', 'SP', '87654321');
+      const client2 = ClientPF.create({ name: 'Maria Santos', cpf: cpf2, email: 'maria@email.com', address: 'Rua B', number: '456', state: 'SP', cep: '87654321' });
       client2.id = 2;
       const clients = [client1, client2];
 
@@ -81,7 +81,7 @@ describe('ClientApplicationService', () => {
 
   describe('updateClientPF', () => {
     it('should update client PF successfully', async () => {
-      const existingClient = ClientPF.create('João Silva', new CPF('12345678901'), 'joao@email.com', '11999999999', 'Rua A, 123');
+      const existingClient = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123' });
       existingClient.id = 1;
       const updatedClient = { ...existingClient, name: 'João Silva Atualizado' };
 
@@ -111,7 +111,7 @@ describe('ClientApplicationService', () => {
   describe('createClientPJ', () => {
     it('should create client PJ successfully', async () => {
       const cnpj = new CNPJ('12345678000123');
-      const client = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', cnpj, 'contato@empresa.com', 'Av. Paulista', '1000', 'SP', '01310100', 'João Silva');
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const savedClient = { ...client, id: 1 };
 
       mockRepository.findClientPJByCNPJ.mockResolvedValue(null);
@@ -127,7 +127,7 @@ describe('ClientApplicationService', () => {
   describe('getClientPJ', () => {
     it('should get client PJ successfully', async () => {
       const cnpj = new CNPJ('12345678000123');
-      const client = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', cnpj, 'contato@empresa.com', 'Av. Paulista', '1000', 'SP', '01310100', 'João Silva');
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       client.id = 1;
 
       mockRepository.findClientPJById.mockResolvedValue(client);
@@ -144,10 +144,10 @@ describe('ClientApplicationService', () => {
   describe('listClientsPJ', () => {
     it('should list all clients PJ', async () => {
       const cnpj1 = new CNPJ('12345678000123');
-      const client1 = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', cnpj1, 'contato@empresa.com', 'Av. Paulista', '1000', 'SP', '01310100', 'João Silva');
+      const client1 = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: cnpj1, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       client1.id = 1;
       const cnpj2 = new CNPJ('98765432000100');
-      const client2 = ClientPJ.create('Empresa ABC', 'Empresa ABC Ltda', 'Empresa ABC Ltda', cnpj2, 'contato@abc.com', 'Av. Brasil', '2000', 'SP', '01410200', 'Maria Silva');
+      const client2 = ClientPJ.create({ name: 'Empresa ABC', fantasyName: 'Empresa ABC Ltda', companyName: 'Empresa ABC Ltda', cnpj: cnpj2, email: 'contato@abc.com', address: 'Av. Brasil', number: '2000', state: 'SP', cep: '01410200', legalResponsible: 'Maria Silva' });
       client2.id = 2;
       const clients = [client1, client2];
 
@@ -166,7 +166,7 @@ describe('ClientApplicationService', () => {
   describe('updateClientPJ', () => {
     it('should update client PJ successfully', async () => {
       const cnpj = new CNPJ('12345678000123');
-      const existingClient = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', cnpj, 'contato@empresa.com', 'Av. Paulista', '1000', 'SP', '01310100', 'João Silva');
+      const existingClient = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       existingClient.id = 1;
       const updatedClient = { ...existingClient, companyName: 'Empresa XYZ Atualizada' };
 

@@ -43,7 +43,7 @@ describe('PrismaClientRepository', () => {
 
   describe('createClientPF', () => {
     it('should create client PF successfully', async () => {
-      const client = ClientPF.create('João Silva', new CPF('12345678901'), 'joao@email.com', 'Rua A, 123', '123', 'SP', '01234567');
+      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
       const createdData = {
         id: 1,
         name: 'João Silva',
@@ -189,7 +189,7 @@ describe('PrismaClientRepository', () => {
 
   describe('updateClientPF', () => {
     it('should update client PF successfully', async () => {
-      const client = ClientPF.create('João Silva Atualizado', new CPF('12345678901'), 'joao@email.com', 'Rua A, 123', '123', 'SP', '01234567');
+      const client = ClientPF.create({ name: 'João Silva Atualizado', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
       const updatedData = {
         id: 1,
         name: 'João Silva Atualizado',
@@ -234,7 +234,7 @@ describe('PrismaClientRepository', () => {
 
   describe('createClientPJ', () => {
     it('should create client PJ successfully', async () => {
-      const client = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', new CNPJ('12345678000123'), 'contato@empresa.com', 'Av. Paulista, 1000', '1000', 'SP', '01310100', 'João Silva');
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000123'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const createdData = {
         id: 1,
         name: 'Empresa XYZ',
@@ -363,7 +363,7 @@ describe('PrismaClientRepository', () => {
 
   describe('updateClientPJ', () => {
     it('should update client PJ successfully', async () => {
-      const client = ClientPJ.create('Empresa XYZ', 'Empresa XYZ Ltda', 'Empresa XYZ Ltda', new CNPJ('12345678000123'), 'contato@empresa.com', 'Av. Paulista, 1000', '1000', 'SP', '01310100', 'João Silva');
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000123'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const updatedData = {
         id: 1,
         name: 'Empresa XYZ',
