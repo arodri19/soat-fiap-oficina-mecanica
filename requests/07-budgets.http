@@ -1,0 +1,32 @@
+@baseUrl = http://localhost:4001/api
+@token = INSIRA_O_TOKEN_AQUI
+
+### Listar Orçamentos
+GET {{baseUrl}}/budgets
+Authorization: Bearer {{token}}
+
+### Criar Orçamento (agrupando ordens)
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "orderIds": ["ID_ORDEM_1", "ID_ORDEM_2"]
+}
+
+### Obter Orçamento Específico
+GET {{baseUrl}}/budgets/ID_DO_ORCAMENTO
+Authorization: Bearer {{token}}
+
+### Atualizar Orçamento
+PUT {{baseUrl}}/budgets/ID_DO_ORCAMENTO
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "totalBudget": 500.00
+}
+
+### Deletar Orçamento
+DELETE {{baseUrl}}/budgets/ID_DO_ORCAMENTO
+Authorization: Bearer {{token}}

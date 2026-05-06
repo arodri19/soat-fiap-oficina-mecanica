@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: oficina
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - oficina-network
+  app:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - 4000:4000
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432/oficina?schema=public"
+      JWT_SECRET: "super-secret-change-me"
+      PORT: 4000
+    volumes:
+      - .:/usr/src/app
+    command: sh -c "npm install && npx prisma generate && npm run start"
+    networks:
+      - oficina-network
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 5050:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: andre.rodrigues19@outlook.com.br
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - oficina-network
+volumes:
+  db-data:
+  pgadmin-data:
+networks:
+  oficina-network:
+    driver: bridge
