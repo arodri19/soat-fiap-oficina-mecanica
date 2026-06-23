@@ -39,13 +39,13 @@ async function seedAdminUser() {
 
 async function seedServices() {
   const servico1 = await prisma.service.create({
-    data: { name: 'Troca de Óleo', slaMinutes: 60 }
+    data: { name: 'Troca de Óleo', slaMinutes: 60, price: 80.00 }
   });
   const servico2 = await prisma.service.create({
-    data: { name: 'Alinhamento e Balanceamento', slaMinutes: 120 }
+    data: { name: 'Alinhamento e Balanceamento', slaMinutes: 120, price: 120.00 }
   });
   const servico3 = await prisma.service.create({
-    data: { name: 'Revisão Completa', slaMinutes: 240 }
+    data: { name: 'Revisão Completa', slaMinutes: 240, price: 350.00 }
   });
   console.log('3 Serviços criados.');
   return { servico1, servico2, servico3 };
@@ -53,13 +53,13 @@ async function seedServices() {
 
 async function seedParts() {
   const peca1 = await prisma.part.create({
-    data: { name: 'Óleo de Motor 5W40', type: 'Óleo', model: 'Sintético', color: 'N/A', quantity: 50 }
+    data: { name: 'Óleo de Motor 5W40', type: 'Óleo', model: 'Sintético', color: 'N/A', quantity: 50, price: 45.00 }
   });
   const peca2 = await prisma.part.create({
-    data: { name: 'Filtro de Óleo', type: 'Filtro', model: 'Padrão', color: 'N/A', quantity: 30 }
+    data: { name: 'Filtro de Óleo', type: 'Filtro', model: 'Padrão', color: 'N/A', quantity: 30, price: 25.00 }
   });
   const peca3 = await prisma.part.create({
-    data: { name: 'Pastilha de Freio', type: 'Freio', model: 'Cerâmica', color: 'N/A', quantity: 20 }
+    data: { name: 'Pastilha de Freio', type: 'Freio', model: 'Cerâmica', color: 'N/A', quantity: 20, price: 150.00 }
   });
   console.log('3 Peças criadas.');
   return { peca1, peca2, peca3 };
@@ -67,13 +67,13 @@ async function seedParts() {
 
 async function seedClients() {
   const cliente1 = await prisma.clientPF.create({
-    data: { name: 'João Silva', cpf: '111.222.333-44', email: 'joao@example.com', address: 'Rua A', number: '123', state: 'SP', cep: '01000-000' }
+    data: { name: 'João Silva', cpf: '529.982.247-25', email: 'joao@example.com', address: 'Rua A', number: '123', state: 'SP', cep: '01000-000' }
   });
   const cliente2 = await prisma.clientPF.create({
-    data: { name: 'Maria Oliveira', cpf: '555.666.777-88', email: 'maria@example.com', address: 'Rua B', number: '456', state: 'RJ', cep: '20000-000' }
+    data: { name: 'Maria Oliveira', cpf: '111.444.777-35', email: 'maria@example.com', address: 'Rua B', number: '456', state: 'RJ', cep: '20000-000' }
   });
   const cliente3 = await prisma.clientPF.create({
-    data: { name: 'Carlos Souza', cpf: '999.888.777-66', email: 'carlos@example.com', address: 'Rua C', number: '789', state: 'MG', cep: '30000-000' }
+    data: { name: 'Carlos Souza', cpf: '123.456.789-09', email: 'carlos@example.com', address: 'Rua C', number: '789', state: 'MG', cep: '30000-000' }
   });
   console.log('3 Clientes PF criados.');
   return { cliente1, cliente2, cliente3 };
@@ -81,13 +81,13 @@ async function seedClients() {
 
 async function seedVehicles(clientes) {
   const veiculo1 = await prisma.vehicle.create({
-    data: { plate: 'ABC-1234', model: 'Honda Civic', year: 2020, color: 'Prata', clientPFId: clientes.cliente1.id }
+    data: { plate: 'ABC1234', model: 'Honda Civic', year: 2020, color: 'Prata', clientPFId: clientes.cliente1.id }
   });
   const veiculo2 = await prisma.vehicle.create({
-    data: { plate: 'DEF-5678', model: 'Toyota Corolla', year: 2021, color: 'Preto', clientPFId: clientes.cliente2.id }
+    data: { plate: 'DEF5678', model: 'Toyota Corolla', year: 2021, color: 'Preto', clientPFId: clientes.cliente2.id }
   });
   const veiculo3 = await prisma.vehicle.create({
-    data: { plate: 'GHI-9012', model: 'VW Nivus', year: 2022, color: 'Branco', clientPFId: clientes.cliente3.id }
+    data: { plate: 'GHI9012', model: 'VW Nivus', year: 2022, color: 'Branco', clientPFId: clientes.cliente3.id }
   });
   console.log('3 Veículos criados.');
   return { veiculo1, veiculo2, veiculo3 };
