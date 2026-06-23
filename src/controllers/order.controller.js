@@ -216,10 +216,10 @@ async function updateOrderStatus(req, res) {
  */
 async function addServiceToOrder(req, res) {
   const id = Number(req.params.id);
-  const { serviceId, budgetValue } = req.body;
+  const { serviceId } = req.body;
   if (!serviceId) return res.status(400).json({ message: 'ID do serviço é obrigatório.' });
 
-  const updated = await orderService.addServiceToOrder(id, serviceId, budgetValue);
+  const updated = await orderService.addServiceToOrder(id, serviceId);
   if (!updated) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   return res.json(updated);
 }

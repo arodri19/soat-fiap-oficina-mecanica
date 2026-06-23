@@ -7,12 +7,14 @@ const partRoutes = require('./part.routes');
 const orderRoutes = require('./order.routes');
 const budgetRoutes = require('./budget.routes');
 const metricsRoutes = require('./metrics.routes');
+const trackRoutes = require('./track.routes');
 
 const { authenticate } = require('../middlewares/auth');
 
 const router = express.Router();
 
 router.use('/auth', authRoutes);
+router.use('/track', trackRoutes);
 router.use('/clients', authenticate, clientRoutes);
 router.use('/vehicles', authenticate, vehicleRoutes);
 router.use('/services', authenticate, serviceRoutes);

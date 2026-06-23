@@ -10,7 +10,7 @@ const {
 } = require('../models/order.model');
 const { ValidationError } = require('../utils/validation');
 
-const ORDER_APPROVAL_MESSAGE = 'Aprovação mock enviada, status alterado para EM_EXECUCAO.';
+const ORDER_APPROVAL_PENDING_MESSAGE = 'Aguardando aprovação do cliente. Use o link de acompanhamento para aprovar.';
 const ORDER_FINISHED_MESSAGE = 'Finalizado e email mock enviado ao cliente.';
 const ORDER_DELIVERED_MESSAGE = 'Pagamento mock registrado e ordem entregue.';
 
@@ -38,21 +38,15 @@ async function updateOrderStatus(id, status) {
   const order = await orderRepository.findOrder(id);
   if (!order) return null;
 
-  if (status === 'AGUARDANDO_APROVACAO') {
-    mockNotify(`Ordem ${order.id} aguardando aprovação: ${order.description}`);
-  }
-
-  if (status === 'FINALIZADA') {
-    mockNotify(`Ordem ${order.id} finalizada. Enviando email para o cliente.`);
-  }
-
   const data = buildOrderStatusUpdate(status, order);
   const updated = await orderRepository.updateOrder(id, data);
 
   if (status === 'AGUARDANDO_APROVACAO') {
-    return { order: updated, message: ORDER_APPROVAL_MESSAGE };
+    mockNotify(`Ordem ${order.id} aguardando aprovação: ${order.description}`);
+    return { order: updated, message: ORDER_APPROVAL_PENDING_MESSAGE };
   }
   if (status === 'FINALIZADA') {
+    mockNotify(`Ordem ${order.id} finalizada. Enviando email para o cliente.`);
     return { order: updated, message: ORDER_FINISHED_MESSAGE };
   }
   if (status === 'ENTREGUE') {
@@ -62,16 +56,15 @@ async function updateOrderStatus(id, status) {
   return updated;
 }
 
-async function addServiceToOrder(id, serviceId, budgetValue) {
+async function addServiceToOrder(id, serviceId) {
   const order = await orderRepository.findOrder(id);
   if (!order) return null;
 
-  const validated = validateServiceToOrder({ serviceId, budgetValue });
+  const validated = validateServiceToOrder({ serviceId });
 
   await orderRepository.addServiceToOrder(id, validated.serviceId);
-  return orderRepository.updateOrder(id, {
-    budgetValue: validated.budgetValue === undefined ? order.budgetValue : validated.budgetValue
-  });
+  const budgetValue = await orderRepository.calculateOrderBudget(id);
+  return orderRepository.updateOrder(id, { budgetValue });
 }
 
 async function addPartToOrder(id, orderServiceServiceId, partId, quantity) {
@@ -94,11 +87,35 @@ async function addPartToOrder(id, orderServiceServiceId, partId, quantity) {
   });
   const orderPart = await orderRepository.addPartToOrder(orderServiceServiceId, part.id, validated.quantity);
 
+  const budgetValue = await orderRepository.calculateOrderBudget(id);
+  await orderRepository.updateOrder(id, { budgetValue });
+
   return { orderPart, part: updatedPart };
+}
+
+async function approveOrder(externalId) {
+  const order = await orderRepository.findOrderByExternalId(externalId);
+  if (!order) return null;
+
+  if (order.status !== 'AGUARDANDO_APROVACAO') {
+    throw new ValidationError(`Ordem não está aguardando aprovação. Status atual: ${order.status}.`);
+  }
+
+  const data = { status: 'EM_EXECUCAO' };
+  if (!order.startAt) data.startAt = new Date();
+  const updated = await orderRepository.updateOrder(order.id, data);
+  mockNotify(`Ordem ${order.id} aprovada pelo cliente. Iniciando execução.`);
+  return updated;
 }
 
 async function getOrderProgress(id) {
   const order = await orderRepository.getOrder(id);
+  if (!order) return null;
+  return buildOrderProgress(order);
+}
+
+async function getOrderProgressByExternalId(externalId) {
+  const order = await orderRepository.findOrderByExternalId(externalId);
   if (!order) return null;
   return buildOrderProgress(order);
 }
@@ -110,5 +127,7 @@ module.exports = {
   updateOrderStatus,
   addServiceToOrder,
   addPartToOrder,
-  getOrderProgress
+  approveOrder,
+  getOrderProgress,
+  getOrderProgressByExternalId
 };

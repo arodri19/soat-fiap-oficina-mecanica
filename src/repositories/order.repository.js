@@ -55,12 +55,44 @@ async function findOrdersByIds(ids) {
   });
 }
 
+async function findOrderByExternalId(externalId) {
+  return prisma.orderService.findUnique({
+    where: { externalId },
+    include: { clientPF: true, clientPJ: true }
+  });
+}
+
+async function calculateOrderBudget(id) {
+  const order = await prisma.orderService.findUnique({
+    where: { id },
+    include: {
+      services: {
+        include: {
+          service: true,
+          parts: { include: { part: true } }
+        }
+      }
+    }
+  });
+  if (!order) return 0;
+  let total = 0;
+  for (const os of order.services) {
+    total += os.service.price || 0;
+    for (const osp of os.parts) {
+      total += (osp.part.price || 0) * osp.quantity;
+    }
+  }
+  return total;
+}
+
 module.exports = {
   createOrder,
   listOrders,
   getOrder,
   findOrder,
   findOrdersByIds,
+  findOrderByExternalId,
+  calculateOrderBudget,
   updateOrder,
   addServiceToOrder,
   addPartToOrder

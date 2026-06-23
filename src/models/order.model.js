@@ -1,4 +1,4 @@
-const { validateString, validateNumber, validateDate, validateOneOf, validateEnum } = require('../utils/validation');
+const { validateString, validateNumber, validateDate, validateOneOf, validateEnum, ValidationError } = require('../utils/validation');
 
 const ORDER_STATUSES = [
   'RECEBIDA',
@@ -8,6 +8,15 @@ const ORDER_STATUSES = [
   'FINALIZADA',
   'ENTREGUE'
 ];
+
+const VALID_TRANSITIONS = {
+  RECEBIDA: ['EM_DIAGNOSTICO'],
+  EM_DIAGNOSTICO: ['AGUARDANDO_APROVACAO'],
+  AGUARDANDO_APROVACAO: ['EM_EXECUCAO'],
+  EM_EXECUCAO: ['FINALIZADA'],
+  FINALIZADA: ['ENTREGUE'],
+  ENTREGUE: []
+};
 
 function buildOrderData(body) {
   validateString(body.description, 'description');
@@ -28,23 +37,23 @@ function buildOrderData(body) {
 function buildOrderStatusUpdate(status, order) {
   validateEnum(status, 'status', ORDER_STATUSES);
 
+  const allowed = VALID_TRANSITIONS[order.status] || [];
+  if (!allowed.includes(status)) {
+    throw new ValidationError(`Transição inválida: ${order.status} → ${status}. Permitido: ${allowed.join(', ') || 'nenhuma'}.`);
+  }
+
   const data = { status };
 
-  if (status === 'AGUARDANDO_APROVACAO') {
-    data.status = 'EM_EXECUCAO';
-    data.startAt = order.startAt || new Date();
+  if (status === 'EM_EXECUCAO' && !order.startAt) {
+    data.startAt = new Date();
   }
 
   if (status === 'FINALIZADA') {
     data.endAt = new Date();
   }
 
-  if (status === 'EM_EXECUCAO' && !order.startAt) {
-    data.startAt = new Date();
-  }
-
-  if (status === 'ENTREGUE') {
-    data.endAt = data.endAt || new Date();
+  if (status === 'ENTREGUE' && !order.endAt) {
+    data.endAt = new Date();
   }
 
   return data;
@@ -64,8 +73,7 @@ function buildOrderProgress(order) {
 
 function validateServiceToOrder(body) {
   return {
-    serviceId: validateNumber(body.serviceId, 'serviceId', { required: true, integer: true }),
-    budgetValue: body.budgetValue === undefined ? undefined : validateNumber(body.budgetValue, 'budgetValue', { required: false, min: 0 })
+    serviceId: validateNumber(body.serviceId, 'serviceId', { required: true, integer: true })
   };
 }
 
@@ -78,6 +86,7 @@ function validatePartToOrder(body) {
 
 module.exports = {
   ORDER_STATUSES,
+  VALID_TRANSITIONS,
   buildOrderData,
   buildOrderStatusUpdate,
   validateOrderStatus,
