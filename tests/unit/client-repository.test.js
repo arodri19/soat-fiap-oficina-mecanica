@@ -43,11 +43,11 @@ describe('PrismaClientRepository', () => {
 
   describe('createClientPF', () => {
     it('should create client PF successfully', async () => {
-      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
+      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678909'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
       const createdData = {
         id: 1,
         name: 'João Silva',
-        cpf: '12345678901',
+        cpf: '12345678909',
         email: 'joao@email.com',
         address: 'Rua A, 123',
         number: '123',
@@ -64,7 +64,7 @@ describe('PrismaClientRepository', () => {
       expect(mockPrisma.clientPF.create).toHaveBeenCalledWith({
         data: {
           name: 'João Silva',
-          cpf: '12345678901',
+          cpf: '12345678909',
           email: 'joao@email.com',
           address: 'Rua A, 123',
           number: '123',
@@ -84,7 +84,7 @@ describe('PrismaClientRepository', () => {
       const clientData = {
         id: 1,
         name: 'João Silva',
-        cpf: '12345678901',
+        cpf: '12345678909',
         email: 'joao@email.com',
         address: 'Rua A, 123',
         number: '123',
@@ -119,11 +119,11 @@ describe('PrismaClientRepository', () => {
 
   describe('findClientPFByCPF', () => {
     it('should find client PF by CPF', async () => {
-      const cpf = new CPF('12345678901');
+      const cpf = new CPF('12345678909');
       const clientData = {
         id: 1,
         name: 'João Silva',
-        cpf: '12345678901',
+        cpf: '12345678909',
         email: 'joao@email.com',
         address: 'Rua A, 123',
         number: '123',
@@ -138,7 +138,7 @@ describe('PrismaClientRepository', () => {
       const result = await repository.findClientPFByCPF(cpf);
 
       expect(mockPrisma.clientPF.findUnique).toHaveBeenCalledWith({
-        where: { cpf: '12345678901' }
+        where: { cpf: '12345678909' }
       });
       expect(result.id).toBe(1);
     });
@@ -150,7 +150,7 @@ describe('PrismaClientRepository', () => {
         {
           id: 1,
           name: 'João Silva',
-          cpf: '12345678901',
+          cpf: '12345678909',
           email: 'joao@email.com',
           address: 'Rua A, 123',
           number: '123',
@@ -189,11 +189,11 @@ describe('PrismaClientRepository', () => {
 
   describe('updateClientPF', () => {
     it('should update client PF successfully', async () => {
-      const client = ClientPF.create({ name: 'João Silva Atualizado', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
+      const client = ClientPF.create({ name: 'João Silva Atualizado', cpf: new CPF('12345678909'), email: 'joao@email.com', address: 'Rua A, 123', number: '123', state: 'SP', cep: '01234567' });
       const updatedData = {
         id: 1,
         name: 'João Silva Atualizado',
-        cpf: '12345678901',
+        cpf: '12345678909',
         email: 'joao@email.com',
         address: 'Rua A, 123',
         number: '123',
@@ -234,13 +234,13 @@ describe('PrismaClientRepository', () => {
 
   describe('createClientPJ', () => {
     it('should create client PJ successfully', async () => {
-      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000123'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000195'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const createdData = {
         id: 1,
         name: 'Empresa XYZ',
         fantasyName: 'Empresa XYZ Ltda',
         companyName: 'Empresa XYZ Ltda',
-        cnpj: '12345678000123',
+        cnpj: '12345678000195',
         email: 'contato@empresa.com',
         address: 'Av. Paulista, 1000',
         number: '1000',
@@ -260,7 +260,7 @@ describe('PrismaClientRepository', () => {
           name: 'Empresa XYZ',
           fantasyName: 'Empresa XYZ Ltda',
           companyName: 'Empresa XYZ Ltda',
-          cnpj: '12345678000123',
+          cnpj: '12345678000195',
           email: 'contato@empresa.com',
           address: 'Av. Paulista, 1000',
           number: '1000',
@@ -281,7 +281,7 @@ describe('PrismaClientRepository', () => {
         name: 'Empresa XYZ',
         fantasyName: 'Empresa XYZ Ltda',
         companyName: 'Empresa XYZ Ltda',
-        cnpj: '12345678000123',
+        cnpj: '12345678000195',
         email: 'contato@empresa.com',
         address: 'Av. Paulista, 1000',
         number: '1000',
@@ -304,13 +304,13 @@ describe('PrismaClientRepository', () => {
 
   describe('findClientPJByCNPJ', () => {
     it('should find client PJ by CNPJ', async () => {
-      const cnpj = new CNPJ('12345678000123');
+      const cnpj = new CNPJ('12345678000195');
       const clientData = {
         id: 1,
         name: 'Empresa XYZ',
         fantasyName: 'Empresa XYZ Ltda',
         companyName: 'Empresa XYZ Ltda',
-        cnpj: '12345678000123',
+        cnpj: '12345678000195',
         email: 'contato@empresa.com',
         address: 'Av. Paulista, 1000',
         number: '1000',
@@ -325,7 +325,7 @@ describe('PrismaClientRepository', () => {
 
       const result = await repository.findClientPJByCNPJ(cnpj);
 
-      expect(mockPrisma.clientPJ.findUnique).toHaveBeenCalledWith({ where: { cnpj: '12345678000123' } });
+      expect(mockPrisma.clientPJ.findUnique).toHaveBeenCalledWith({ where: { cnpj: '12345678000195' } });
       expect(result.id).toBe(1);
       expect(result.companyName).toBe('Empresa XYZ Ltda');
     });
@@ -339,7 +339,7 @@ describe('PrismaClientRepository', () => {
           name: 'Empresa XYZ',
           fantasyName: 'Empresa XYZ Ltda',
           companyName: 'Empresa XYZ Ltda',
-          cnpj: '12345678000123',
+          cnpj: '12345678000195',
           email: 'contato@empresa.com',
           address: 'Av. Paulista, 1000',
           number: '1000',
@@ -363,13 +363,13 @@ describe('PrismaClientRepository', () => {
 
   describe('updateClientPJ', () => {
     it('should update client PJ successfully', async () => {
-      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000123'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
+      const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: new CNPJ('12345678000195'), email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const updatedData = {
         id: 1,
         name: 'Empresa XYZ',
         fantasyName: 'Empresa XYZ Ltda',
         companyName: 'Empresa XYZ Atualizada',
-        cnpj: '12345678000123',
+        cnpj: '12345678000195',
         email: 'contato@empresa.com',
         address: 'Av. Paulista, 1000',
         number: '1000',

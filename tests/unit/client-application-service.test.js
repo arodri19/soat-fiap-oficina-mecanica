@@ -27,13 +27,13 @@ describe('ClientApplicationService', () => {
 
   describe('createClientPF', () => {
     it('should create client PF successfully', async () => {
-      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
+      const client = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678909'), email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       const savedClient = { ...client, id: 1 };
 
       mockRepository.findClientPFByCPF.mockResolvedValue(null);
       mockRepository.createClientPF.mockResolvedValue(savedClient);
 
-      const result = await service.createClientPF('João Silva', '12345678901', 'joao@email.com', 'Rua A', '123', 'SP', '12345678');
+      const result = await service.createClientPF('João Silva', '12345678909', 'joao@email.com', 'Rua A', '123', 'SP', '12345678');
 
       expect(mockRepository.createClientPF).toHaveBeenCalled();
       expect(result.id).toBe(1);
@@ -42,7 +42,7 @@ describe('ClientApplicationService', () => {
 
   describe('getClientPF', () => {
     it('should get client PF successfully', async () => {
-      const cpf = new CPF('12345678901');
+      const cpf = new CPF('12345678909');
       const client = ClientPF.create({ name: 'João Silva', cpf, email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       client.id = 1;
 
@@ -53,13 +53,13 @@ describe('ClientApplicationService', () => {
       expect(mockRepository.findClientPFById).toHaveBeenCalledWith(1);
       expect(result.id).toBe(1);
       expect(result.name).toBe('João Silva');
-      expect(result.cpf).toBe('123.456.789-01');
+      expect(result.cpf).toBe('123.456.789-09');
     });
   });
 
   describe('listClientsPF', () => {
     it('should list all clients PF', async () => {
-      const cpf1 = new CPF('12345678901');
+      const cpf1 = new CPF('12345678909');
       const client1 = ClientPF.create({ name: 'João Silva', cpf: cpf1, email: 'joao@email.com', address: 'Rua A', number: '123', state: 'SP', cep: '12345678' });
       client1.id = 1;
       const cpf2 = new CPF('98765432100');
@@ -75,13 +75,13 @@ describe('ClientApplicationService', () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe(1);
       expect(result[0].name).toBe('João Silva');
-      expect(result[0].cpf).toBe('123.456.789-01');
+      expect(result[0].cpf).toBe('123.456.789-09');
     });
   });
 
   describe('updateClientPF', () => {
     it('should update client PF successfully', async () => {
-      const existingClient = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678901'), email: 'joao@email.com', address: 'Rua A, 123' });
+      const existingClient = ClientPF.create({ name: 'João Silva', cpf: new CPF('12345678909'), email: 'joao@email.com', address: 'Rua A, 123' });
       existingClient.id = 1;
       const updatedClient = { ...existingClient, name: 'João Silva Atualizado' };
 
@@ -110,14 +110,14 @@ describe('ClientApplicationService', () => {
 
   describe('createClientPJ', () => {
     it('should create client PJ successfully', async () => {
-      const cnpj = new CNPJ('12345678000123');
+      const cnpj = new CNPJ('12345678000195');
       const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       const savedClient = { ...client, id: 1 };
 
       mockRepository.findClientPJByCNPJ.mockResolvedValue(null);
       mockRepository.createClientPJ.mockResolvedValue(savedClient);
 
-      const result = await service.createClientPJ({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: '12345678000123', email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
+      const result = await service.createClientPJ({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: '12345678000195', email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
 
       expect(mockRepository.createClientPJ).toHaveBeenCalled();
       expect(result.id).toBe(1);
@@ -126,7 +126,7 @@ describe('ClientApplicationService', () => {
 
   describe('getClientPJ', () => {
     it('should get client PJ successfully', async () => {
-      const cnpj = new CNPJ('12345678000123');
+      const cnpj = new CNPJ('12345678000195');
       const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       client.id = 1;
 
@@ -137,16 +137,16 @@ describe('ClientApplicationService', () => {
       expect(mockRepository.findClientPJById).toHaveBeenCalledWith(1);
       expect(result.id).toBe(1);
       expect(result.companyName).toBe('Empresa XYZ Ltda');
-      expect(result.cnpj).toBe('12.345.678/0001-23');
+      expect(result.cnpj).toBe('12.345.678/0001-95');
     });
   });
 
   describe('listClientsPJ', () => {
     it('should list all clients PJ', async () => {
-      const cnpj1 = new CNPJ('12345678000123');
+      const cnpj1 = new CNPJ('12345678000195');
       const client1 = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: cnpj1, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       client1.id = 1;
-      const cnpj2 = new CNPJ('98765432000100');
+      const cnpj2 = new CNPJ('98765432000198');
       const client2 = ClientPJ.create({ name: 'Empresa ABC', fantasyName: 'Empresa ABC Ltda', companyName: 'Empresa ABC Ltda', cnpj: cnpj2, email: 'contato@abc.com', address: 'Av. Brasil', number: '2000', state: 'SP', cep: '01410200', legalResponsible: 'Maria Silva' });
       client2.id = 2;
       const clients = [client1, client2];
@@ -159,13 +159,13 @@ describe('ClientApplicationService', () => {
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe(1);
       expect(result[0].companyName).toBe('Empresa XYZ Ltda');
-      expect(result[0].cnpj).toBe('12.345.678/0001-23');
+      expect(result[0].cnpj).toBe('12.345.678/0001-95');
     });
   });
 
   describe('updateClientPJ', () => {
     it('should update client PJ successfully', async () => {
-      const cnpj = new CNPJ('12345678000123');
+      const cnpj = new CNPJ('12345678000195');
       const existingClient = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj, email: 'contato@empresa.com', address: 'Av. Paulista', number: '1000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       existingClient.id = 1;
       const updatedClient = { ...existingClient, companyName: 'Empresa XYZ Atualizada' };

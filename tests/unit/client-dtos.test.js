@@ -14,7 +14,7 @@ describe('Client DTOs', () => {
     it('should create DTO with valid data', () => {
       const data = {
         name: 'João Silva',
-        cpf: '12345678901',
+        cpf: '12345678909',
         email: 'joao@email.com',
         address: 'Rua das Flores',
         number: '123',
@@ -58,7 +58,7 @@ describe('Client DTOs', () => {
 
   describe('ClientPFResponseDTO', () => {
     it('should create response DTO from client entity', () => {
-      const cpf = new CPF('12345678901');
+      const cpf = new CPF('12345678909');
       const client = ClientPF.create({ name: 'João Silva', cpf, email: 'joao@email.com', address: 'Rua A, 123', number: '456', state: 'SP', cep: '01234567' });
       client.id = 1;
       client.createdAt = new Date('2024-01-01');
@@ -68,7 +68,7 @@ describe('Client DTOs', () => {
 
       expect(dto.id).toBe(1);
       expect(dto.name).toBe('João Silva');
-      expect(dto.cpf).toBe('123.456.789-01');
+      expect(dto.cpf).toBe('123.456.789-09');
       expect(dto.email).toBe('joao@email.com');
       expect(dto.address).toBe('Rua A, 123');
       expect(dto.number).toBe('456');
@@ -85,7 +85,7 @@ describe('Client DTOs', () => {
         name: 'Empresa XYZ',
         fantasyName: 'Empresa XYZ Ltda',
         companyName: 'Empresa XYZ Ltda',
-        cnpj: '12345678000123',
+        cnpj: '12345678000195',
         email: 'contato@empresa.com',
         address: 'Av. Paulista',
         number: '1000',
@@ -139,7 +139,7 @@ describe('Client DTOs', () => {
 
   describe('ClientPJResponseDTO', () => {
     it('should create response DTO from client entity', () => {
-      const cnpj = new CNPJ('12345678000123');
+      const cnpj = new CNPJ('12345678000195');
       const client = ClientPJ.create({ name: 'Empresa XYZ', fantasyName: 'Empresa XYZ Ltda', companyName: 'Empresa XYZ Ltda', cnpj: cnpj.value, email: 'contato@empresa.com', address: 'Av. Paulista, 1000', number: '2000', state: 'SP', cep: '01310100', legalResponsible: 'João Silva' });
       client.id = 1;
       client.createdAt = new Date('2024-01-01');
@@ -151,7 +151,7 @@ describe('Client DTOs', () => {
       expect(dto.name).toBe('Empresa XYZ');
       expect(dto.fantasyName).toBe('Empresa XYZ Ltda');
       expect(dto.companyName).toBe('Empresa XYZ Ltda');
-      expect(dto.cnpj).toBe('12.345.678/0001-23');
+      expect(dto.cnpj).toBe('12.345.678/0001-95');
       expect(dto.email).toBe('contato@empresa.com');
       expect(dto.address).toBe('Av. Paulista, 1000');
       expect(dto.number).toBe('2000');
