@@ -1,3 +1,5 @@
+const { ValidationError } = require('../../utils/validation');
+
 function calcCPFDigit(digits, length) {
   let sum = 0;
   for (let i = 0; i < length; i++) {
@@ -16,7 +18,7 @@ function calcCNPJDigit(digits, weights) {
 class CPF {
   constructor(value) {
     if (!this.isValid(value)) {
-      throw new Error('CPF inválido');
+      throw new ValidationError('CPF inválido');
     }
     this.value = value.replaceAll(/\D/g, '');
   }
@@ -50,7 +52,7 @@ class CPF {
 class CNPJ {
   constructor(value) {
     if (!this.isValid(value)) {
-      throw new Error('CNPJ inválido');
+      throw new ValidationError('CNPJ inválido');
     }
     this.value = value.replaceAll(/\D/g, '');
   }

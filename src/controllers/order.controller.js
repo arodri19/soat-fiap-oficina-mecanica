@@ -1,4 +1,4 @@
-const orderService = require('../services/order.service');
+const container = require('../infrastructure/container/Container');
 
 /**
  * @swagger
@@ -60,7 +60,7 @@ async function createOrder(req, res) {
     return res.status(400).json({ message: 'Cliente PF ou PJ deve ser informado.' });
   }
 
-  const order = await orderService.createOrder(req.body);
+  const order = await container.getOrderApplicationService().createOrder(req.body);
   return res.status(201).json(order);
 }
 
@@ -83,7 +83,7 @@ async function createOrder(req, res) {
  *                 $ref: '#/components/schemas/OrderService'
  */
 async function listOrders(req, res) {
-  const orders = await orderService.listOrders();
+  const orders = await container.getOrderApplicationService().listOrders();
   return res.json(orders);
 }
 
@@ -114,7 +114,7 @@ async function listOrders(req, res) {
  */
 async function getOrder(req, res) {
   const id = Number(req.params.id);
-  const order = await orderService.getOrder(id);
+  const order = await container.getOrderApplicationService().getOrder(id);
   if (!order) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   return res.json(order);
 }
@@ -168,7 +168,7 @@ async function updateOrderStatus(req, res) {
   const { status } = req.body;
   if (!status) return res.status(400).json({ message: 'Status inválido.' });
 
-  const result = await orderService.updateOrderStatus(id, status);
+  const result = await container.getOrderApplicationService().updateOrderStatus(id, status);
   if (!result) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   return res.json(result);
 }
@@ -219,7 +219,7 @@ async function addServiceToOrder(req, res) {
   const { serviceId } = req.body;
   if (!serviceId) return res.status(400).json({ message: 'ID do serviço é obrigatório.' });
 
-  const updated = await orderService.addServiceToOrder(id, serviceId);
+  const updated = await container.getOrderApplicationService().addServiceToOrder(id, serviceId);
   if (!updated) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   return res.json(updated);
 }
@@ -280,7 +280,7 @@ async function addPartToOrder(req, res) {
   if (!orderServiceServiceId) return res.status(400).json({ message: 'ID do serviço da ordem (orderServiceServiceId) é obrigatório.' });
   if (!partId) return res.status(400).json({ message: 'ID da peça é obrigatório.' });
 
-  const result = await orderService.addPartToOrder(id, orderServiceServiceId, partId, quantity);
+  const result = await container.getOrderApplicationService().addPartToOrder(id, orderServiceServiceId, partId, quantity);
   if (!result) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   if (result.error === 'PART_NOT_FOUND') return res.status(404).json({ message: 'Peça não encontrada.' });
   return res.json(result);
@@ -324,7 +324,7 @@ async function addPartToOrder(req, res) {
  */
 async function getOrderProgress(req, res) {
   const id = Number(req.params.id);
-  const progress = await orderService.getOrderProgress(id);
+  const progress = await container.getOrderApplicationService().getOrderProgress(id);
   if (!progress) return res.status(404).json({ message: 'Ordem de serviço não encontrada.' });
   return res.json(progress);
 }

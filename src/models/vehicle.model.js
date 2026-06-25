@@ -1,4 +1,4 @@
-const { validateString, validateNumber } = require('../utils/validation');
+const { validateString, validateNumber, ValidationError } = require('../utils/validation');
 
 // Formato antigo: ABC1234 (3 letras + 4 dígitos)
 const PLATE_OLD = /^[A-Z]{3}\d{4}$/;
@@ -8,11 +8,11 @@ const PLATE_MERCOSUL = /^[A-Z]{3}\d[A-Z]\d{2}$/;
 function validatePlate(value) {
   const raw = validateString(value, 'plate');
   if (!raw) {
-    throw new Error('Placa inválida. Use o formato antigo (ABC1234) ou Mercosul (ABC1D23).');
+    throw new ValidationError('Placa inválida. Use o formato antigo (ABC1234) ou Mercosul (ABC1D23).');
   }
   const normalized = raw.replace(/-/g, '').toUpperCase();
   if (!PLATE_OLD.test(normalized) && !PLATE_MERCOSUL.test(normalized)) {
-    throw new Error('Placa inválida. Use o formato antigo (ABC1234) ou Mercosul (ABC1D23).');
+    throw new ValidationError('Placa inválida. Use o formato antigo (ABC1234) ou Mercosul (ABC1D23).');
   }
   return normalized;
 }

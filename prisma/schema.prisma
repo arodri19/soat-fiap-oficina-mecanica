@@ -102,7 +102,7 @@ model Budget {
 
 model OrderService {
   id          Int                    @id @default(autoincrement())
-  externalId  String                 @default(uuid())
+  externalId  String                 @unique @default(uuid())
   status      OrderStatus            @default(RECEBIDA)
   description String
   mechanicName String?

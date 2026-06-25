@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const routes = require('./routes');
-const { swaggerUi, specs } = require('./swagger');
-
 const app = express();
 app.disable('x-powered-by');
 
@@ -14,9 +12,6 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
 }));
 app.use(morgan('dev'));
-
-// Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use('/api', routes);
 
