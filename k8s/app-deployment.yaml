@@ -1,0 +1,99 @@
+# Substituir <REGISTRY_URL> pelo endereço do seu registry (ex: ghcr.io/usuario/oficina-app).
+# Build e push: docker build -t <REGISTRY_URL>/oficina-mecanica-app:latest . && docker push ...
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oficina-app
+  namespace: oficina-mecanica
+  labels:
+    app: oficina-app
+    app.kubernetes.io/name: oficina-mecanica
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oficina-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1       # sobe 1 pod novo antes de derrubar o antigo
+      maxUnavailable: 0 # zero downtime durante o deploy
+  template:
+    metadata:
+      labels:
+        app: oficina-app
+    spec:
+      # initContainer executa as migrations antes de iniciar a aplicação.
+      # prisma migrate deploy é idempotente e usa advisory locks no Postgres,
+      # por isso é seguro rodar em paralelo quando múltiplos pods iniciam juntos.
+      initContainers:
+        - name: migrate
+          image: <REGISTRY_URL>/oficina-mecanica-app:latest
+          imagePullPolicy: Always
+          command: ["npx", "prisma", "migrate", "deploy"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: DATABASE_URL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+
+      containers:
+        - name: app
+          image: <REGISTRY_URL>/oficina-mecanica-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: PORT
+            - name: CORS_ORIGIN
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: CORS_ORIGIN
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: JWT_SECRET
+
+          # readinessProbe: pod só recebe tráfego após a porta estar aberta
+          readinessProbe:
+            tcpSocket:
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+
+          # livenessProbe: reinicia o container se ele parar de responder
+          livenessProbe:
+            tcpSocket:
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"    # base mínima garantida por pod
+              memory: "128Mi"
+            limits:
+              cpu: "500m"    # limite para o HPA calcular % de uso
+              memory: "512Mi"

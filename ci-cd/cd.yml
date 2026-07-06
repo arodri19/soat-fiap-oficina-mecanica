@@ -1,0 +1,264 @@
+name: CD — Infraestrutura (Terraform) e Deploy Kubernetes
+
+# ── Triggers ──────────────────────────────────────────────────────────────────
+on:
+  # Dispara automaticamente quando o CI conclui com sucesso na main
+  workflow_run:
+    workflows: ['CI — Build, Testes e Imagem Docker']
+    branches: [main]
+    types: [completed]
+
+  # Permite acionar manualmente para hotfix ou rollback
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Tag da imagem ECR (ex: abc1234 ou latest)'
+        required: false
+        default: 'latest'
+      environment:
+        description: 'Ambiente alvo'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [dev, staging, prod]
+
+# ── Variáveis globais ──────────────────────────────────────────────────────────
+# Secrets (Settings → Secrets): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+#                                DB_PASSWORD, JWT_SECRET
+# Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME,
+#                                   TF_STATE_BUCKET, TF_STATE_LOCK_TABLE
+env:
+  AWS_REGION:       ${{ vars.AWS_REGION || 'us-east-1' }}
+  EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME || 'oficina-mecanica-dev' }}
+  ECR_REPOSITORY:   oficina-mecanica-app
+  TF_VERSION:       '1.5.7'
+  NAMESPACE:        'oficina-mecanica'
+
+jobs:
+  # ── Guard ────────────────────────────────────────────────────────────────────
+  # Bloqueia o deploy se o CI falhou.
+  # Permite passagem em workflow_dispatch (deploy manual sempre autorizado).
+  guard:
+    name: Verificar resultado do CI
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
+    steps:
+      - name: CI aprovado
+        run: echo "✅ CI concluiu com sucesso. Iniciando pipeline de CD."
+
+  # ── Job 1: Provisionamento de Infraestrutura (Terraform) ──────────────────
+  # Cria ou atualiza: VPC, EKS, RDS PostgreSQL e ECR.
+  # O plan com -detailed-exitcode retorna:
+  #   0 = sem mudanças, 1 = erro, 2 = mudanças pendentes
+  # O apply só é executado quando exitcode == 2 (evita apply desnecessário).
+  provision-infra:
+    name: Provisionamento de Infraestrutura (Terraform)
+    runs-on: ubuntu-latest
+    needs: guard
+    defaults:
+      run:
+        working-directory: infra
+
+    outputs:
+      cluster-name: ${{ steps.tf-outputs.outputs.cluster-name }}
+      rds-endpoint: ${{ steps.tf-outputs.outputs.rds-endpoint }}
+      ecr-repo-url: ${{ steps.tf-outputs.outputs.ecr-repo-url }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform ${{ env.TF_VERSION }}
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Terraform Init (backend S3 + lock DynamoDB)
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
+            -backend-config="key=oficina-mecanica/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="dynamodb_table=${{ vars.TF_STATE_LOCK_TABLE }}" \
+            -backend-config="encrypt=true" \
+            -input=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          set +e
+          terraform plan -out=tfplan -no-color -detailed-exitcode -input=false
+          EXITCODE=$?
+          set -e
+          echo "exitcode=$EXITCODE" >> $GITHUB_OUTPUT
+          # Propagar erro real (exitcode 1); exitcode 2 = mudanças (não é erro)
+          [ $EXITCODE -eq 1 ] && exit 1 || exit 0
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Terraform Apply
+        if: steps.plan.outputs.exitcode == '2'
+        run: terraform apply -auto-approve -input=false tfplan
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Coletar outputs do Terraform
+        id: tf-outputs
+        run: |
+          echo "cluster-name=$(terraform output -raw cluster_name)"      >> $GITHUB_OUTPUT
+          echo "rds-endpoint=$(terraform output -raw db_endpoint)"        >> $GITHUB_OUTPUT
+          echo "ecr-repo-url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
+      - name: Resumo do Terraform
+        if: always()
+        run: |
+          CHANGES="${{ steps.plan.outputs.exitcode == '2' && 'Aplicadas' || 'Nenhuma' }}"
+          echo "### Terraform ${{ job.status == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Mudanças | $CHANGES |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cluster | \`${{ steps.tf-outputs.outputs.cluster-name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| RDS | \`${{ steps.tf-outputs.outputs.rds-endpoint }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| ECR | \`${{ steps.tf-outputs.outputs.ecr-repo-url }}\` |" >> $GITHUB_STEP_SUMMARY
+
+  # ── Job 2: Deploy no Kubernetes (EKS) ─────────────────────────────────────
+  # 1. Configura kubectl via aws eks update-kubeconfig
+  # 2. Resolve a tag da imagem ECR (SHA do commit que disparou o CI)
+  # 3. Substitui o placeholder no app-deployment.yaml
+  # 4. Cria/atualiza o Secret K8s com credenciais reais (RDS endpoint)
+  # 5. Aplica todos os manifestos por categoria (ordem importa)
+  # 6. Aguarda rollout com timeout de 5 min
+  deploy-k8s:
+    name: Deploy no Kubernetes (EKS)
+    runs-on: ubuntu-latest
+    needs: provision-infra
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Resolver URI da imagem ECR
+        id: image
+        run: |
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            # SHA curto do commit que disparou o CI
+            TAG=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          fi
+
+          echo "tag=$TAG"                                  >> $GITHUB_OUTPUT
+          echo "uri=$REGISTRY/${{ env.ECR_REPOSITORY }}:$TAG" >> $GITHUB_OUTPUT
+
+      - name: Configurar kubectl (EKS)
+        run: |
+          CLUSTER="${{ needs.provision-infra.outputs.cluster-name }}"
+          # Fallback para a variável de repositório se o output estiver vazio
+          aws eks update-kubeconfig \
+            --region "${{ env.AWS_REGION }}" \
+            --name   "${CLUSTER:-${{ env.EKS_CLUSTER_NAME }}}"
+
+      - name: Substituir imagem no Deployment YAML
+        run: |
+          IMAGE="${{ steps.image.outputs.uri }}"
+          sed -i \
+            "s|<REGISTRY_URL>/oficina-mecanica-app:latest|$IMAGE|g" \
+            k8s/app-deployment.yaml
+          echo "Imagem configurada: $IMAGE"
+
+      # ── Aplicar manifestos por ordem de dependência ──────────────────────
+      - name: Aplicar Namespace
+        run: kubectl apply -f k8s/namespace.yaml
+
+      - name: Aplicar ConfigMap
+        run: kubectl apply -f k8s/configmap.yaml
+
+      - name: Criar/atualizar Secret com credenciais do RDS
+        run: |
+          RDS_ENDPOINT="${{ needs.provision-infra.outputs.rds-endpoint }}"
+          DB_URL="postgresql://postgres:${{ secrets.DB_PASSWORD }}@${RDS_ENDPOINT}/oficina?schema=public"
+
+          kubectl create secret generic oficina-secrets \
+            --namespace="${{ env.NAMESPACE }}" \
+            --from-literal=POSTGRES_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --from-literal=DATABASE_URL="$DB_URL" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Aplicar StatefulSet e Service do PostgreSQL (in-cluster)
+        run: |
+          kubectl apply -f k8s/postgres-statefulset.yaml
+          kubectl apply -f k8s/postgres-service.yaml
+
+      - name: Aplicar Deployment, Service e HPA da aplicação
+        run: |
+          kubectl apply -f k8s/app-deployment.yaml
+          kubectl apply -f k8s/app-service.yaml
+          kubectl apply -f k8s/app-hpa.yaml
+
+      # ── Verificações pós-deploy ──────────────────────────────────────────
+      - name: Aguardar rollout do Deployment
+        run: |
+          kubectl rollout status deployment/oficina-app \
+            --namespace="${{ env.NAMESPACE }}" \
+            --timeout=300s
+
+      - name: Estado do cluster após deploy
+        if: always()
+        run: |
+          echo "=== Pods ==="
+          kubectl get pods -n "${{ env.NAMESPACE }}" -o wide
+          echo ""
+          echo "=== Services ==="
+          kubectl get svc -n "${{ env.NAMESPACE }}"
+          echo ""
+          echo "=== HPA ==="
+          kubectl get hpa -n "${{ env.NAMESPACE }}"
+          echo ""
+          echo "=== Events recentes ==="
+          kubectl get events -n "${{ env.NAMESPACE }}" \
+            --sort-by='.lastTimestamp' | tail -10
+
+      - name: Resumo do deploy
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          EMOJI=$([ "$STATUS" = "success" ] && echo "✅" || echo "❌")
+          echo "### Deploy Kubernetes $EMOJI $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Imagem ECR | \`${{ steps.image.outputs.uri }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tag | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cluster EKS | \`${{ env.EKS_CLUSTER_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| RDS Endpoint | \`${{ needs.provision-infra.outputs.rds-endpoint }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Namespace | \`${{ env.NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY

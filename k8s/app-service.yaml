@@ -1,0 +1,20 @@
+# LoadBalancer expõe a aplicação externamente.
+# Em clusters locais (minikube/kind), use "minikube tunnel" ou type: NodePort.
+# Em produção, prefira Ingress + ClusterIP para controle de roteamento.
+apiVersion: v1
+kind: Service
+metadata:
+  name: oficina-app-service
+  namespace: oficina-mecanica
+  labels:
+    app: oficina-app
+    app.kubernetes.io/name: oficina-mecanica
+spec:
+  type: LoadBalancer
+  selector:
+    app: oficina-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 4000
+      protocol: TCP
