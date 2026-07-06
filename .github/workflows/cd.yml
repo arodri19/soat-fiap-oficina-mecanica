@@ -5,7 +5,7 @@ on:
   # Dispara automaticamente quando o CI conclui com sucesso na main
   workflow_run:
     workflows: ['CI — Build, Testes e Imagem Docker']
-    branches: [main]
+    branches: [main, fase02]
     types: [completed]
 
   # Permite acionar manualmente para hotfix ou rollback
