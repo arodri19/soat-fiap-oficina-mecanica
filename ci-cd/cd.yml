@@ -58,6 +58,7 @@ jobs:
     name: Provisionamento de Infraestrutura (Terraform)
     runs-on: ubuntu-latest
     needs: guard
+    environment: oficina-prd
     defaults:
       run:
         working-directory: infra
@@ -148,6 +149,7 @@ jobs:
     name: Deploy no Kubernetes (EKS)
     runs-on: ubuntu-latest
     needs: provision-infra
+    environment: oficina-prd
 
     steps:
       - name: Checkout do código
