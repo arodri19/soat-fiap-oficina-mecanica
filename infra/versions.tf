@@ -8,14 +8,13 @@ terraform {
     }
   }
 
-  # Descomente para usar backend remoto (recomendado em equipe)
-  # backend "s3" {
-  #   bucket         = "oficina-terraform-state"
-  #   key            = "infra/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "oficina-terraform-lock"
-  #   encrypt        = true
-  # }
+  backend "s3" {
+    bucket         = "oficina-terraform-state-769628268406"
+    key            = "infra/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "oficina-terraform-lock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
