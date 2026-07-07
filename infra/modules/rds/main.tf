@@ -9,7 +9,7 @@ locals {
 
 resource "aws_security_group" "rds" {
   name        = "${local.name}-rds-sg"
-  description = "Security group do RDS PostgreSQL — acesso somente dos nodes EKS"
+  description = "RDS PostgreSQL security group - access from EKS nodes only"
   vpc_id      = var.vpc_id
 
   ingress {
@@ -55,7 +55,7 @@ resource "aws_db_subnet_group" "main" {
 resource "aws_db_parameter_group" "postgres16" {
   name        = "${local.name}-postgres16"
   family      = "postgres16"
-  description = "Parâmetros customizados PostgreSQL 16"
+  description = "Custom parameters for PostgreSQL 16"
 
   parameter {
     name  = "log_connections"
