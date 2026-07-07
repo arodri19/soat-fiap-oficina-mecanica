@@ -31,7 +31,7 @@ module "eks" {
 # scan_on_push detecta CVEs automaticamente no push.
 # lifecycle_policy mantém apenas as 10 imagens mais recentes (controle de custo).
 resource "aws_ecr_repository" "app" {
-  name                 = "${var.project_name}-app"
+  name                 = "oficina-api"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -39,7 +39,7 @@ resource "aws_ecr_repository" "app" {
   }
 
   tags = {
-    Name = "${var.project_name}-app"
+    Name = "oficina-api"
   }
 }
 
