@@ -9,7 +9,7 @@ on:
 env:
   NODE_VERSION:   '20'
   AWS_REGION:     ${{ vars.AWS_REGION || 'us-east-1' }}
-  ECR_REPOSITORY: oficina-api
+  ECR_REPOSITORY: oficina-mecanica-app-fiap-andre-rq
 
 jobs:
   # ── Job 1: Testes Automatizados ───────────────────────────────────────────

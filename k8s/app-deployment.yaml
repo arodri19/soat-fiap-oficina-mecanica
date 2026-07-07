@@ -26,7 +26,7 @@ spec:
       # por isso é seguro rodar em paralelo quando múltiplos pods iniciam juntos.
       initContainers:
         - name: migrate
-          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-api:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app-fiap-andre-rq:latest
           imagePullPolicy: Always
           command: ["npx", "prisma", "migrate", "deploy"]
           env:
@@ -45,7 +45,7 @@ spec:
 
       containers:
         - name: app
-          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-api:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app-fiap-andre-rq:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
