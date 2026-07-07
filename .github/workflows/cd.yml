@@ -287,6 +287,15 @@ jobs:
             --namespace="${{ env.NAMESPACE }}" \
             --timeout=300s
 
+      - name: Executar seed do banco de dados
+        run: |
+          POD=$(kubectl get pods -n "${{ env.NAMESPACE }}" \
+            -l app=oficina-app \
+            --field-selector=status.phase=Running \
+            -o jsonpath='{.items[0].metadata.name}')
+          echo "Executando seed no pod: $POD"
+          kubectl exec -n "${{ env.NAMESPACE }}" "$POD" -- node prisma/seed.js
+
       - name: Estado do cluster após deploy
         if: always()
         run: |

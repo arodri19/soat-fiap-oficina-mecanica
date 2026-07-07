@@ -5,181 +5,221 @@ const crypto = require('node:crypto');
 const prisma = new PrismaClient();
 
 async function clearDatabase() {
-  // Limpar tabelas para evitar duplicidade (ordem importa por causa das foreign keys)
   await prisma.orderServiceServicePart.deleteMany();
   await prisma.orderServiceService.deleteMany();
   await prisma.orderService.deleteMany();
   await prisma.budget.deleteMany();
   await prisma.vehicle.deleteMany();
   await prisma.clientPF.deleteMany();
+  await prisma.clientPJ.deleteMany();
   await prisma.part.deleteMany();
   await prisma.service.deleteMany();
+  await prisma.user.deleteMany();
 }
 
-async function seedAdminUser() {
-  const existingUser = await prisma.user.findUnique({
-    where: { email: 'admin@oficina.com' }
+async function seedUsers() {
+  const hashedPassword = await bcrypt.hash('Admin123!', 10);
+  const attendant = await prisma.user.create({
+    data: { name: 'Atendente Padrão', email: 'admin@oficina.com', password: hashedPassword, role: 'ATTENDANT' }
   });
-
-  if (existingUser === null) {
-    const hashedPassword = await bcrypt.hash('Admin123!', 10);
-    const user = await prisma.user.create({
-      data: {
-        name: 'Administrador',
-        email: 'admin@oficina.com',
-        password: hashedPassword,
-        role: 'ATTENDANT'
-      }
-    });
-    console.log('Usuário padrão criado com sucesso:', user.email);
-  } else {
-    console.log('Usuário padrão já existe.');
-  }
+  const mechanic = await prisma.user.create({
+    data: { name: 'Mecânico Padrão', email: 'mecanico@oficina.com', password: hashedPassword, role: 'MECHANIC' }
+  });
+  console.log('2 Usuários criados (admin@oficina.com / mecanico@oficina.com — senha: Admin123!)');
+  return { attendant, mechanic };
 }
 
 async function seedServices() {
-  const servico1 = await prisma.service.create({
-    data: { name: 'Troca de Óleo', slaMinutes: 60, price: 80.00 }
-  });
-  const servico2 = await prisma.service.create({
-    data: { name: 'Alinhamento e Balanceamento', slaMinutes: 120, price: 120.00 }
-  });
-  const servico3 = await prisma.service.create({
-    data: { name: 'Revisão Completa', slaMinutes: 240, price: 350.00 }
-  });
-  console.log('3 Serviços criados.');
-  return { servico1, servico2, servico3 };
+  const services = await Promise.all([
+    prisma.service.create({ data: { name: 'Troca de Óleo',               slaMinutes: 60,  price: 80.00  } }),
+    prisma.service.create({ data: { name: 'Alinhamento e Balanceamento', slaMinutes: 120, price: 120.00 } }),
+    prisma.service.create({ data: { name: 'Revisão Completa',            slaMinutes: 240, price: 350.00 } }),
+    prisma.service.create({ data: { name: 'Troca de Pastilha de Freio',  slaMinutes: 90,  price: 180.00 } }),
+    prisma.service.create({ data: { name: 'Diagnóstico Eletrônico',      slaMinutes: 45,  price: 60.00  } }),
+  ]);
+  console.log(`${services.length} Serviços criados.`);
+  return services;
 }
 
 async function seedParts() {
-  const peca1 = await prisma.part.create({
-    data: { name: 'Óleo de Motor 5W40', type: 'Óleo', model: 'Sintético', color: 'N/A', quantity: 50, price: 45.00 }
-  });
-  const peca2 = await prisma.part.create({
-    data: { name: 'Filtro de Óleo', type: 'Filtro', model: 'Padrão', color: 'N/A', quantity: 30, price: 25.00 }
-  });
-  const peca3 = await prisma.part.create({
-    data: { name: 'Pastilha de Freio', type: 'Freio', model: 'Cerâmica', color: 'N/A', quantity: 20, price: 150.00 }
-  });
-  console.log('3 Peças criadas.');
-  return { peca1, peca2, peca3 };
+  const parts = await Promise.all([
+    prisma.part.create({ data: { name: 'Óleo de Motor 5W40',  type: 'Óleo',    model: 'Sintético', color: 'N/A',  quantity: 50, price: 45.00  } }),
+    prisma.part.create({ data: { name: 'Filtro de Óleo',      type: 'Filtro',  model: 'Padrão',    color: 'N/A',  quantity: 30, price: 25.00  } }),
+    prisma.part.create({ data: { name: 'Pastilha de Freio',   type: 'Freio',   model: 'Cerâmica',  color: 'N/A',  quantity: 20, price: 150.00 } }),
+    prisma.part.create({ data: { name: 'Correia Dentada',     type: 'Motor',   model: 'Universal', color: 'N/A',  quantity: 15, price: 90.00  } }),
+    prisma.part.create({ data: { name: 'Vela de Ignição',     type: 'Motor',   model: 'NGK',       color: 'N/A',  quantity: 40, price: 18.00  } }),
+  ]);
+  console.log(`${parts.length} Peças criadas.`);
+  return parts;
 }
 
 async function seedClients() {
-  const cliente1 = await prisma.clientPF.create({
-    data: { name: 'João Silva', cpf: '529.982.247-25', email: 'joao@example.com', address: 'Rua A', number: '123', state: 'SP', cep: '01000-000' }
-  });
-  const cliente2 = await prisma.clientPF.create({
-    data: { name: 'Maria Oliveira', cpf: '111.444.777-35', email: 'maria@example.com', address: 'Rua B', number: '456', state: 'RJ', cep: '20000-000' }
-  });
-  const cliente3 = await prisma.clientPF.create({
-    data: { name: 'Carlos Souza', cpf: '123.456.789-09', email: 'carlos@example.com', address: 'Rua C', number: '789', state: 'MG', cep: '30000-000' }
-  });
-  console.log('3 Clientes PF criados.');
-  return { cliente1, cliente2, cliente3 };
+  const pf = await Promise.all([
+    prisma.clientPF.create({ data: { name: 'João Silva',    cpf: '52998224725', email: 'joao@example.com',  address: 'Rua das Flores',   number: '123', state: 'SP', cep: '01000-000' } }),
+    prisma.clientPF.create({ data: { name: 'Maria Oliveira', cpf: '11144477735', email: 'maria@example.com', address: 'Av Paulista',      number: '456', state: 'SP', cep: '01310-100' } }),
+    prisma.clientPF.create({ data: { name: 'Carlos Souza',  cpf: '12345678909', email: 'carlos@example.com', address: 'Rua do Comércio', number: '789', state: 'MG', cep: '30000-000' } }),
+  ]);
+
+  const pj = await Promise.all([
+    prisma.clientPJ.create({ data: { name: 'Transportes ABC', companyName: 'Transportes ABC Ltda',   fantasyName: 'ABC Log',   cnpj: '11222333000181', email: 'contato@abclog.com',   address: 'Av Industrial', number: '1000', state: 'SP', cep: '06000-000', legalResponsible: 'Pedro Alves'  } }),
+    prisma.clientPJ.create({ data: { name: 'Frota XYZ',      companyName: 'Frota XYZ Serviços Ltda', fantasyName: 'Frota XYZ', cnpj: '22333444000195', email: 'frota@xyzserv.com.br', address: 'Rua da Frota',   number: '200',  state: 'RJ', cep: '20000-000', legalResponsible: 'Ana Costa'    } }),
+  ]);
+
+  console.log(`${pf.length} Clientes PF e ${pj.length} Clientes PJ criados.`);
+  return { pf, pj };
 }
 
-async function seedVehicles(clientes) {
-  const veiculo1 = await prisma.vehicle.create({
-    data: { plate: 'ABC1234', model: 'Honda Civic', year: 2020, color: 'Prata', clientPFId: clientes.cliente1.id }
-  });
-  const veiculo2 = await prisma.vehicle.create({
-    data: { plate: 'DEF5678', model: 'Toyota Corolla', year: 2021, color: 'Preto', clientPFId: clientes.cliente2.id }
-  });
-  const veiculo3 = await prisma.vehicle.create({
-    data: { plate: 'GHI9012', model: 'VW Nivus', year: 2022, color: 'Branco', clientPFId: clientes.cliente3.id }
-  });
-  console.log('3 Veículos criados.');
-  return { veiculo1, veiculo2, veiculo3 };
+async function seedVehicles(clients) {
+  const vehicles = await Promise.all([
+    // Placas Antigas (Padrão Mercosul antigo)
+    prisma.vehicle.create({ data: { plate: 'ABC1234', model: 'Honda Civic',    year: 2020, color: 'Prata',  clientPFId: clients.pf[0].id } }),
+    prisma.vehicle.create({ data: { plate: 'DEF5678', model: 'Toyota Corolla', year: 2021, color: 'Preto',  clientPFId: clients.pf[1].id } }),
+    prisma.vehicle.create({ data: { plate: 'GHI9012', model: 'VW Nivus',       year: 2022, color: 'Branco', clientPFId: clients.pf[2].id } }),
+    // Placas Mercosul
+    prisma.vehicle.create({ data: { plate: 'ABC1D23', model: 'Fiat Pulse',     year: 2023, color: 'Azul',   clientPFId: clients.pf[0].id } }),
+    prisma.vehicle.create({ data: { plate: 'XYZ2E34', model: 'Hyundai HB20',   year: 2024, color: 'Vermelho', clientPJId: clients.pj[0].id } }),
+    prisma.vehicle.create({ data: { plate: 'MNO3F45', model: 'VW Gol',         year: 2023, color: 'Cinza',  clientPJId: clients.pj[1].id } }),
+  ]);
+  console.log(`${vehicles.length} Veículos criados (placas Antigas e Mercosul).`);
+  return vehicles;
 }
 
-async function seedBudgetsAndOrders(clientes, veiculos, servicos, pecas) {
-  for (let i = 1; i <= 3; i++) {
-    const budget = await prisma.budget.create({
-      data: {
-        totalBudget: 1000 * i,
-        createdAt: new Date(`2023-10-0${i}T09:00:00Z`)
+async function seedOrders(clients, vehicles, services, parts) {
+  const mechanics = ['Roberto Mecânico', 'Marcos Silva', 'Ana Técnica'];
+
+  // OS 1 — FINALIZADA (com métricas)
+  const budget1 = await prisma.budget.create({ data: { totalBudget: 205.00 } });
+  await prisma.orderService.create({
+    data: {
+      status: 'FINALIZADA',
+      description: 'Troca de óleo + filtro',
+      mechanicName: mechanics[0],
+      budgetValue: 205.00,
+      startAt: new Date('2026-06-01T08:00:00Z'),
+      endAt:   new Date('2026-06-01T09:30:00Z'),
+      clientPFId: clients.pf[0].id,
+      vehicleId:  vehicles[0].id,
+      budgetId:   budget1.id,
+      services: {
+        create: [{
+          serviceId: services[0].id,
+          parts: { create: [{ partId: parts[0].id, quantity: 1 }, { partId: parts[1].id, quantity: 1 }] }
+        }]
       }
-    });
-
-    let currentClientPFId;
-    let currentVehicleId;
-
-    if (i === 1) {
-      currentClientPFId = clientes.cliente1.id;
-      currentVehicleId = veiculos.veiculo1.id;
-    } else if (i === 2) {
-      currentClientPFId = clientes.cliente2.id;
-      currentVehicleId = veiculos.veiculo2.id;
-    } else {
-      currentClientPFId = clientes.cliente3.id;
-      currentVehicleId = veiculos.veiculo3.id;
     }
+  });
 
-    for (let j = 1; j <= 5; j++) {
-      // Dia aleatório entre 4 e 28 (para garantir que seja após a criação do orçamento)
-      const randomDay = crypto.randomInt(4, 29);
-      // Hora aleatória entre 8 e 17
-      const randomHour = crypto.randomInt(8, 18);
-      // Minuto aleatório entre 0 e 59
-      const randomMinute = crypto.randomInt(0, 60);
-
-      const startAt = new Date(`2023-10-${randomDay.toString().padStart(2, '0')}T${randomHour.toString().padStart(2, '0')}:${randomMinute.toString().padStart(2, '0')}:00Z`);
-
-      // Duração aleatória (entre 1 hora e 24 horas)
-      const durationHours = crypto.randomInt(1, 25);
-      const endAt = new Date(startAt.getTime() + (durationHours * 60 * 60 * 1000));
-
-      await prisma.orderService.create({
-        data: {
-          status: 'FINALIZADA',
-          description: `Serviço de manutenção ${i}.${j}`,
-          mechanicName: j % 2 === 0 ? 'Roberto Mecânico' : 'Marcos Silva',
-          budgetValue: 200 * j,
-          startAt: startAt,
-          endAt: endAt,
-          clientPFId: currentClientPFId,
-          vehicleId: currentVehicleId,
-          budgetId: budget.id,
-          services: {
-            create: [
-              {
-                serviceId: j % 2 === 0 ? servicos.servico1.id : servicos.servico2.id,
-                parts: {
-                  create: [
-                    { partId: pecas.peca1.id, quantity: 1 }
-                  ]
-                }
-              }
-            ]
-          }
-        }
-      });
+  // OS 2 — FINALIZADA (com métricas)
+  const budget2 = await prisma.budget.create({ data: { totalBudget: 480.00 } });
+  await prisma.orderService.create({
+    data: {
+      status: 'FINALIZADA',
+      description: 'Alinhamento, balanceamento e pastilha',
+      mechanicName: mechanics[1],
+      budgetValue: 480.00,
+      startAt: new Date('2026-06-10T09:00:00Z'),
+      endAt:   new Date('2026-06-10T12:30:00Z'),
+      clientPFId: clients.pf[1].id,
+      vehicleId:  vehicles[1].id,
+      budgetId:   budget2.id,
+      services: {
+        create: [
+          { serviceId: services[1].id, parts: { create: [] } },
+          { serviceId: services[3].id, parts: { create: [{ partId: parts[2].id, quantity: 2 }] } }
+        ]
+      }
     }
-  }
-  console.log('3 Orçamentos e 15 Ordens de Serviço (5 para cada orçamento) criados e finalizados.');
+  });
+
+  // OS 3 — EM_EXECUCAO (aprovada pelo cliente, em andamento)
+  const budget3 = await prisma.budget.create({ data: { totalBudget: 410.00 } });
+  await prisma.orderService.create({
+    data: {
+      status: 'EM_EXECUCAO',
+      description: 'Revisão completa + diagnóstico',
+      mechanicName: mechanics[2],
+      budgetValue: 410.00,
+      startAt: new Date(),
+      endAt: null,
+      clientPFId: clients.pf[2].id,
+      vehicleId:  vehicles[2].id,
+      budgetId:   budget3.id,
+      services: {
+        create: [
+          { serviceId: services[2].id, parts: { create: [{ partId: parts[3].id, quantity: 1 }] } },
+          { serviceId: services[4].id, parts: { create: [] } }
+        ]
+      }
+    }
+  });
+
+  // OS 4 — AGUARDANDO_APROVACAO (cliente PJ, placa Mercosul)
+  await prisma.orderService.create({
+    data: {
+      status: 'AGUARDANDO_APROVACAO',
+      description: 'Troca de velas e correia dentada',
+      mechanicName: mechanics[0],
+      budgetValue: 198.00,
+      startAt: null,
+      endAt: null,
+      clientPJId: clients.pj[0].id,
+      vehicleId:  vehicles[4].id,
+      services: {
+        create: [{
+          serviceId: services[0].id,
+          parts: { create: [{ partId: parts[4].id, quantity: 4 }, { partId: parts[3].id, quantity: 1 }] }
+        }]
+      }
+    }
+  });
+
+  // OS 5 — EM_DIAGNOSTICO
+  await prisma.orderService.create({
+    data: {
+      status: 'EM_DIAGNOSTICO',
+      description: 'Barulho estranho na suspensão',
+      mechanicName: mechanics[1],
+      budgetValue: 0,
+      startAt: null,
+      endAt: null,
+      clientPJId: clients.pj[1].id,
+      vehicleId:  vehicles[5].id,
+      services: { create: [] }
+    }
+  });
+
+  // OS 6 — RECEBIDA (recém aberta)
+  await prisma.orderService.create({
+    data: {
+      status: 'RECEBIDA',
+      description: 'Revisão pré-viagem',
+      mechanicName: null,
+      budgetValue: 0,
+      startAt: null,
+      endAt: null,
+      clientPFId: clients.pf[0].id,
+      vehicleId:  vehicles[3].id,
+      services: { create: [] }
+    }
+  });
+
+  console.log('6 Ordens de Serviço criadas (RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, 2x FINALIZADA).');
 }
 
 async function main() {
   console.log('Iniciando seed do banco de dados...');
-
   await clearDatabase();
-  await seedAdminUser();
-  const servicos = await seedServices();
-  const pecas = await seedParts();
-  const clientes = await seedClients();
-  const veiculos = await seedVehicles(clientes);
-  await seedBudgetsAndOrders(clientes, veiculos, servicos, pecas);
-
-  console.log('Seed do banco de dados concluído com sucesso!');
+  await seedUsers();
+  const services = await seedServices();
+  const parts    = await seedParts();
+  const clients  = await seedClients();
+  const vehicles = await seedVehicles(clients);
+  await seedOrders(clients, vehicles, services, parts);
+  console.log('\nSeed concluído! Credenciais de acesso:');
+  console.log('  Atendente: admin@oficina.com    / Admin123!');
+  console.log('  Mecânico:  mecanico@oficina.com / Admin123!');
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+  .then(async () => { await prisma.$disconnect(); })
+  .catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });
