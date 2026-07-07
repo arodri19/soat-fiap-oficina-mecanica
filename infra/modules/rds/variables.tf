@@ -15,7 +15,12 @@ variable "private_subnet_ids" {
 }
 
 variable "eks_node_sg_id" {
-  description = "Security group dos worker nodes — único que pode acessar o banco"
+  description = "Security group dos worker nodes (Terraform-managed)"
+  type        = string
+}
+
+variable "eks_cluster_sg_id" {
+  description = "Security group gerenciado pelo EKS (AWS-managed, automaticamente anexado aos nodes)"
   type        = string
 }
 

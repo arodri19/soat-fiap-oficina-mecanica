@@ -13,11 +13,19 @@ resource "aws_security_group" "rds" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "PostgreSQL dos worker nodes EKS"
+    description     = "PostgreSQL from EKS node SG (Terraform-managed)"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [var.eks_node_sg_id]
+  }
+
+  ingress {
+    description     = "PostgreSQL from EKS cluster SG (AWS-managed, attached to nodes)"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [var.eks_cluster_sg_id]
   }
 
   egress {
