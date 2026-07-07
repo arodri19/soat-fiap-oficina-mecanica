@@ -8,13 +8,9 @@ terraform {
     }
   }
 
-  backend "s3" {
-    bucket         = "oficina-terraform-state-769628268406"
-    key            = "infra/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "oficina-terraform-lock"
-    encrypt        = true
-  }
+  # Valores injetados via -backend-config no CI/CD (cd.yml)
+  # GitHub Variables: TF_STATE_BUCKET, TF_STATE_LOCK_TABLE, AWS_REGION
+  backend "s3" {}
 }
 
 provider "aws" {
