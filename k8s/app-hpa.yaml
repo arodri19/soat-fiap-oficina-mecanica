@@ -1,0 +1,52 @@
+# HPA requer o metrics-server instalado no cluster.
+# Minikube: minikube addons enable metrics-server
+# EKS/GKE/AKS: já incluído por padrão.
+#
+# Lógica de escalonamento:
+#   - Escala PARA CIMA quando CPU > 70% OU memória > 80% (média entre pods)
+#   - Escala PARA BAIXO com janela de estabilização de 5 min (evita flapping)
+#   - Máximo de 2 pods adicionados por minuto ao subir; 1 removido por vez ao descer
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: oficina-app-hpa
+  namespace: oficina-mecanica
+  labels:
+    app: oficina-app
+    app.kubernetes.io/name: oficina-mecanica
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: oficina-app
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # % do limits.cpu definido no Deployment
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # % do limits.memory definido no Deployment
+
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60   # aguarda 1 min de pressão antes de escalar
+      policies:
+        - type: Pods
+          value: 2            # adiciona no máximo 2 pods por janela
+          periodSeconds: 60
+
+    scaleDown:
+      stabilizationWindowSeconds: 300  # aguarda 5 min de folga antes de reduzir
+      policies:
+        - type: Pods
+          value: 1            # remove no máximo 1 pod por janela
+          periodSeconds: 120

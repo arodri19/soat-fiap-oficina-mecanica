@@ -1,0 +1,19 @@
+# ClusterIP: banco acessível somente internamente no cluster.
+# O nome "postgres-service" é referenciado no DATABASE_URL do Secret.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: oficina-mecanica
+  labels:
+    app: postgres
+    app.kubernetes.io/name: oficina-mecanica
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP

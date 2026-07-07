@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./openapi.json');
 const routes = require('./routes');
-const { swaggerUi, specs } = require('./swagger');
-
 const app = express();
 app.disable('x-powered-by');
 
@@ -15,9 +15,7 @@ app.use(cors({
 }));
 app.use(morgan('dev'));
 
-// Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', routes);
 
 // Tratamento de erros de parsing JSON
