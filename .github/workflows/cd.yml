@@ -2,14 +2,10 @@ name: CD — Infraestrutura (Terraform) e Deploy Kubernetes
 
 # ── Triggers ──────────────────────────────────────────────────────────────────
 on:
-  # Dispara automaticamente em push direto na fase02 (para testes)
-  push:
-    branches: [fase02]
-
-  # Dispara automaticamente quando o CI conclui com sucesso
+  # Dispara automaticamente quando o CI conclui com sucesso na main
   workflow_run:
     workflows: ['CI — Build, Testes e Imagem Docker']
-    branches: [main, fase02]
+    branches: [main]
     types: [completed]
 
   # Permite acionar manualmente para hotfix ou rollback
@@ -47,7 +43,6 @@ jobs:
     runs-on: ubuntu-latest
     if: >
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success')
     steps:
