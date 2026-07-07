@@ -1,5 +1,3 @@
-# Substituir <REGISTRY_URL> pelo endereço do seu registry (ex: ghcr.io/usuario/oficina-app).
-# Build e push: docker build -t <REGISTRY_URL>/oficina-mecanica-app:latest . && docker push ...
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,7 +26,7 @@ spec:
       # por isso é seguro rodar em paralelo quando múltiplos pods iniciam juntos.
       initContainers:
         - name: migrate
-          image: <REGISTRY_URL>/oficina-mecanica-app:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app:latest
           imagePullPolicy: Always
           command: ["npx", "prisma", "migrate", "deploy"]
           env:
@@ -47,7 +45,7 @@ spec:
 
       containers:
         - name: app
-          image: <REGISTRY_URL>/oficina-mecanica-app:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 4000

@@ -178,9 +178,11 @@ jobs:
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="${{ github.event.inputs.image_tag }}"
-          else
-            # SHA curto do commit que disparou o CI
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
             TAG=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
+          else
+            # push direto — usa latest (sempre publicada pelo CI)
+            TAG="latest"
           fi
 
           echo "tag=$TAG"                                  >> $GITHUB_OUTPUT
@@ -194,11 +196,13 @@ jobs:
             --region "${{ env.AWS_REGION }}" \
             --name   "${CLUSTER:-${{ env.EKS_CLUSTER_NAME }}}"
 
-      - name: Substituir imagem no Deployment YAML
+      - name: Atualizar tag da imagem no Deployment YAML
         run: |
           IMAGE="${{ steps.image.outputs.uri }}"
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          # Substitui qualquer tag anterior pela nova (SHA ou latest)
           sed -i \
-            "s|<REGISTRY_URL>/oficina-mecanica-app:latest|$IMAGE|g" \
+            "s|${REGISTRY}/${{ env.ECR_REPOSITORY }}:[^ ]*|${IMAGE}|g" \
             k8s/app-deployment.yaml
           echo "Imagem configurada: $IMAGE"
 
