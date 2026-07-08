@@ -147,6 +147,19 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Importar ECR no state se já existir
+        run: |
+          ECR_NAME="${{ env.ECR_REPOSITORY }}"
+          if aws ecr describe-repositories --repository-names "$ECR_NAME" \
+               --region "${{ env.AWS_REGION }}" 2>/dev/null; then
+            terraform state list | grep -q "aws_ecr_repository.app" || \
+              terraform import aws_ecr_repository.app "$ECR_NAME"
+            echo "ECR $ECR_NAME sincronizado no state."
+          fi
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        working-directory: infra
+
       - name: Terraform Plan
         id: plan
         run: |
