@@ -15,7 +15,13 @@ app.use(cors({
 }));
 app.use(morgan('dev'));
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+  const spec = {
+    ...swaggerSpec,
+    servers: [{ url: `${req.protocol}://${req.get('host')}/api`, description: 'Servidor atual' }],
+  };
+  swaggerUi.setup(spec)(req, res, next);
+});
 app.use('/api', routes);
 
 // Tratamento de erros de parsing JSON
