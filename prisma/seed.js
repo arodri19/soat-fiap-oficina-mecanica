@@ -71,14 +71,14 @@ async function seedClients() {
 
 async function seedVehicles(clients) {
   const vehicles = await Promise.all([
-    // Placas Antigas (Padrão Mercosul antigo)
-    prisma.vehicle.create({ data: { plate: 'ABC1234', model: 'Honda Civic',    year: 2020, color: 'Prata',  clientPFId: clients.pf[0].id } }),
-    prisma.vehicle.create({ data: { plate: 'DEF5678', model: 'Toyota Corolla', year: 2021, color: 'Preto',  clientPFId: clients.pf[1].id } }),
-    prisma.vehicle.create({ data: { plate: 'GHI9012', model: 'VW Nivus',       year: 2022, color: 'Branco', clientPFId: clients.pf[2].id } }),
-    // Placas Mercosul
-    prisma.vehicle.create({ data: { plate: 'ABC1D23', model: 'Fiat Pulse',     year: 2023, color: 'Azul',   clientPFId: clients.pf[0].id } }),
-    prisma.vehicle.create({ data: { plate: 'XYZ2E34', model: 'Hyundai HB20',   year: 2024, color: 'Vermelho', clientPJId: clients.pj[0].id } }),
-    prisma.vehicle.create({ data: { plate: 'MNO3F45', model: 'VW Gol',         year: 2023, color: 'Cinza',  clientPJId: clients.pj[1].id } }),
+    // Placas Antigas
+    prisma.vehicle.create({ data: { plate: 'ABC1234', model: 'Honda Civic',    year: 2020, color: 'Prata',    clientPFId: clients.pf[0].id } }),
+    prisma.vehicle.create({ data: { plate: 'DEF5678', model: 'Toyota Corolla', year: 2021, color: 'Preto',    clientPFId: clients.pf[1].id } }),
+    prisma.vehicle.create({ data: { plate: 'GHI9012', model: 'VW Nivus',       year: 2022, color: 'Branco',   clientPFId: clients.pf[2].id } }),
+    // Placas Mercosul (Vehicle só suporta clientPFId; empresas PJ trazem veículos de colaboradores PF)
+    prisma.vehicle.create({ data: { plate: 'ABC1D23', model: 'Fiat Pulse',     year: 2023, color: 'Azul',     clientPFId: clients.pf[0].id } }),
+    prisma.vehicle.create({ data: { plate: 'XYZ2E34', model: 'Hyundai HB20',  year: 2024, color: 'Vermelho', clientPFId: clients.pf[1].id } }),
+    prisma.vehicle.create({ data: { plate: 'MNO3F45', model: 'VW Gol',        year: 2023, color: 'Cinza',    clientPFId: clients.pf[2].id } }),
   ]);
   console.log(`${vehicles.length} Veículos criados (placas Antigas e Mercosul).`);
   return vehicles;
