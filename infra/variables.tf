@@ -34,25 +34,25 @@ variable "cluster_version" {
 variable "node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes"
   type        = string
-  default     = "t3.medium"
+  default     = "t3.micro"
 }
 
 variable "node_desired_size" {
   description = "Quantidade desejada de worker nodes"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "node_min_size" {
   description = "Quantidade mínima de worker nodes"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "node_max_size" {
   description = "Quantidade máxima de worker nodes (teto do Cluster Autoscaler)"
   type        = number
-  default     = 5
+  default     = 1
 }
 
 # ── RDS ───────────────────────────────────────────────────────────────────────
@@ -85,4 +85,10 @@ variable "db_allocated_storage" {
   description = "Armazenamento inicial em GB"
   type        = number
   default     = 20
+}
+
+variable "db_backup_retention" {
+  description = "Dias de retenção de backup do RDS (0 = desabilitado)"
+  type        = number
+  default     = 0
 }
