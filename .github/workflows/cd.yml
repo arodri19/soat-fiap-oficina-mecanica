@@ -282,11 +282,6 @@ jobs:
             --from-literal=DATABASE_URL="$DB_URL" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Aplicar StatefulSet e Service do PostgreSQL (in-cluster)
-        run: |
-          kubectl apply -f k8s/postgres-statefulset.yaml
-          kubectl apply -f k8s/postgres-service.yaml
-
       - name: Aplicar Deployment, Service e HPA da aplicação
         run: |
           kubectl apply -f k8s/app-deployment.yaml
