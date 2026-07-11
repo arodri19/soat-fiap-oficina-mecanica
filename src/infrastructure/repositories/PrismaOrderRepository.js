@@ -43,8 +43,9 @@ class PrismaOrderRepository extends IOrderRepository {
   async listOrders({ status, page = 1, limit = 20 } = {}) {
     const skip = (page - 1) * limit;
 
+    // status is a PostgreSQL enum — cast to text to allow parameterized comparison
     const statusFilter = status
-      ? Prisma.sql`AND status = ${status}`
+      ? Prisma.sql`AND status::text = ${status}`
       : Prisma.empty;
 
     // Step 1: get ordered IDs via raw SQL (CASE WHEN not supported in Prisma orderBy)
