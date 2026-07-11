@@ -182,8 +182,8 @@ resource "aws_eks_node_group" "main" {
   subnet_ids      = var.private_subnet_ids
 
   instance_types = [var.node_instance_type]
-  ami_type       = "AL2_x86_64"     # Amazon Linux 2
-  capacity_type  = "ON_DEMAND"       # SPOT reduz custo em 60-70% com menos garantia
+  ami_type       = "AL2023_x86_64_STANDARD" # Amazon Linux 2023 (AL2 é descontinuado em 26/11/2025)
+  capacity_type  = "ON_DEMAND"              # SPOT reduz custo em 60-70% com menos garantia
 
   scaling_config {
     desired_size = var.node_desired_size
