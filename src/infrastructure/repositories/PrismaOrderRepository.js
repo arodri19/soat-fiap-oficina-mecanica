@@ -31,8 +31,20 @@ class PrismaOrderRepository extends IOrderRepository {
     });
   }
 
-  async listOrders() {
-    return prisma.orderService.findMany({ include: ORDER_WITH_RELATIONS });
+  async listOrders({ status, page = 1, limit = 20 } = {}) {
+    const where = status ? { status } : {};
+    const skip  = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      prisma.orderService.findMany({
+        where,
+        include: ORDER_WITH_RELATIONS,
+        orderBy: { id: 'desc' },
+        skip,
+        take: limit,
+      }),
+      prisma.orderService.count({ where }),
+    ]);
+    return { data, total, page, limit, pages: Math.ceil(total / limit) };
   }
 
   async updateOrder(id, data) {

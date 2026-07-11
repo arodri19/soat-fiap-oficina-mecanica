@@ -20,8 +20,8 @@ class OrderApplicationService {
     return new CreateOrderUseCase(this.orderRepository).execute(data);
   }
 
-  async listOrders() {
-    return new ListOrdersUseCase(this.orderRepository).execute();
+  async listOrders({ status, page, limit } = {}) {
+    return new ListOrdersUseCase(this.orderRepository).execute({ status, page, limit });
   }
 
   async getOrder(id) {

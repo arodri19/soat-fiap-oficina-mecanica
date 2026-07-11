@@ -31,8 +31,8 @@ class ListOrdersUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute() {
-    return this.orderRepository.listOrders();
+  async execute({ status, page, limit } = {}) {
+    return this.orderRepository.listOrders({ status, page, limit });
   }
 }
 
