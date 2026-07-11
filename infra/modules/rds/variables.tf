@@ -44,3 +44,8 @@ variable "db_instance_class" {
 variable "db_allocated_storage" {
   type = number
 }
+
+variable "db_backup_retention" {
+  type    = number
+  default = 0
+}

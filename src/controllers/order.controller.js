@@ -83,8 +83,13 @@ async function createOrder(req, res) {
  *                 $ref: '#/components/schemas/OrderService'
  */
 async function listOrders(req, res) {
-  const orders = await container.getOrderApplicationService().listOrders();
-  return res.json(orders);
+  const { status, page, limit } = req.query;
+  const result = await container.getOrderApplicationService().listOrders({
+    status,
+    page:  page  ? parseInt(page)  : 1,
+    limit: limit ? parseInt(limit) : 20,
+  });
+  return res.json(result);
 }
 
 /**

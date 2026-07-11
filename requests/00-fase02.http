@@ -1,0 +1,171 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║   FASE 02 — 5 Endpoints Obrigatórios (FIAP SOAT)            ║
+# ║                                                              ║
+# ║  Extensão necessária: REST Client (humao.rest-client)        ║
+# ║  Como usar: clique em "Send Request" acima de cada bloco     ║
+# ║                                                              ║
+# ║  Ordem recomendada para a demo:                              ║
+# ║  0. Login → copie o token para @token abaixo                 ║
+# ║  1. POST   /api/orders      → Abertura de OS                 ║
+# ║  2. GET    /api/orders      → Listagem de OS                 ║
+# ║  3. PATCH  /api/orders/:id/status → Atualização de status    ║
+# ║  4. GET    /api/track/:externalId → Consulta pública (sem JWT)║
+# ║  5. POST   /api/track/:externalId/approve → Aprovação        ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# ── Variáveis — ajuste a URL se rodar no EKS ──────────────────────
+@baseUrl   = http://localhost:4000/api
+
+# IDs reais do seed (válidos após npm run seed)
+@clienteId = 16
+@veiculoId = 28
+
+# Cole aqui o token retornado pelo Login (passo 0)
+@token = COLE_O_TOKEN_AQUI
+
+# Após criar a OS (passo 1), cole o id e externalId retornados
+@orderId    = COLE_O_ID_DA_OS_AQUI
+@externalId = COLE_O_EXTERNAL_ID_AQUI
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# PASSO 0 — Login (pré-requisito para obter o token)
+# ══════════════════════════════════════════════════════════════════
+
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@oficina.com",
+  "password": "Admin123!"
+}
+
+###
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINT 1 — Abertura de Ordem de Serviço (OS)
+# POST /api/orders
+# ══════════════════════════════════════════════════════════════════
+# Cria uma nova OS com status inicial RECEBIDA.
+# Resposta inclui `id` e `externalId` — cole-os nas variáveis acima.
+# ──────────────────────────────────────────────────────────────────
+
+# @name criarOS
+POST {{baseUrl}}/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "description": "Revisão completa pré-viagem — verificação geral",
+  "clientPFId": {{clienteId}},
+  "vehicleId": {{veiculoId}},
+  "mechanicName": "Roberto Silva"
+}
+
+###
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINT 2 — Listagem de Ordens de Serviço
+# GET /api/orders
+# ══════════════════════════════════════════════════════════════════
+# Retorna todas as OS. Aceita filtro ?status=RECEBIDA
+# ──────────────────────────────────────────────────────────────────
+
+GET {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+
+###
+
+# Filtrar apenas OS em aguardando aprovação
+GET {{baseUrl}}/orders?status=AGUARDANDO_APROVACAO
+Authorization: Bearer {{token}}
+
+###
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINT 3 — Atualização de Status da OS
+# PATCH /api/orders/:id/status
+# ══════════════════════════════════════════════════════════════════
+# Avança o status respeitando a máquina de estados:
+#   RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO
+#   → EM_EXECUCAO → FINALIZADA
+#
+# Cole o id da OS criada no passo 1 em @orderId
+# ──────────────────────────────────────────────────────────────────
+
+# Passo 3a — RECEBIDA → EM_DIAGNOSTICO
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "EM_DIAGNOSTICO"
+}
+
+###
+
+# Passo 3b — EM_DIAGNOSTICO → AGUARDANDO_APROVACAO (gera orçamento para o cliente)
+PATCH {{baseUrl}}/orders/{{orderId}}/status
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "AGUARDANDO_APROVACAO"
+}
+
+###
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINT 4 — Consulta de Status da OS (PÚBLICA — sem JWT)
+# GET /api/track/:externalId
+# ══════════════════════════════════════════════════════════════════
+# Rota pública: o cliente final acompanha a OS pelo UUID único.
+# Não requer autenticação — sem header Authorization.
+#
+# Cole o externalId da OS criada no passo 1 em @externalId
+# ──────────────────────────────────────────────────────────────────
+
+GET {{baseUrl}}/track/{{externalId}}
+
+###
+
+
+
+# ══════════════════════════════════════════════════════════════════
+# ENDPOINT 5 — Aprovação de Orçamento pelo Cliente
+# POST /api/track/:externalId/approve
+# ══════════════════════════════════════════════════════════════════
+# Rota pública: cliente aprova ou reprova o orçamento.
+#   approved: true  → AGUARDANDO_APROVACAO → EM_EXECUCAO
+#   approved: false → AGUARDANDO_APROVACAO → CANCELADA
+#
+# A OS precisa estar em status AGUARDANDO_APROVACAO para funcionar.
+# ──────────────────────────────────────────────────────────────────
+
+# Aprovar o orçamento → OS vai para EM_EXECUCAO
+POST {{baseUrl}}/track/{{externalId}}/approve
+Content-Type: application/json
+
+{
+  "approved": true
+}
+
+###
+
+# Reprovar o orçamento → OS vai para CANCELADA
+# POST {{baseUrl}}/track/{{externalId}}/approve
+# Content-Type: application/json
+#
+# {
+#   "approved": false
+# }

@@ -9,7 +9,7 @@ on:
 env:
   NODE_VERSION:   '20'
   AWS_REGION:     ${{ vars.AWS_REGION || 'us-east-1' }}
-  ECR_REPOSITORY: oficina-mecanica-app
+  ECR_REPOSITORY: oficina-mecanica-app-fiap-andre-rq-20260707
 
 jobs:
   # ── Job 1: Testes Automatizados ───────────────────────────────────────────
@@ -121,7 +121,8 @@ jobs:
           LATEST="$REGISTRY/${{ env.ECR_REPOSITORY }}:latest"
 
           docker build \
-            --cache-from "$LATEST" \
+            --cache-from "type=registry,ref=$LATEST" \
+            --cache-to   "type=inline" \
             --tag "$IMAGE" \
             --tag "$LATEST" \
             .

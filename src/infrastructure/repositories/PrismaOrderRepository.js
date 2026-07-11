@@ -1,5 +1,14 @@
+const { Prisma } = require('@prisma/client');
 const prisma = require('../../prisma');
 const IOrderRepository = require('../interfaces/IOrderRepository');
+
+const EXCLUDED_STATUSES = ['FINALIZADA', 'ENTREGUE'];
+const STATUS_PRIORITY = `CASE status
+  WHEN 'EM_EXECUCAO'          THEN 1
+  WHEN 'AGUARDANDO_APROVACAO' THEN 2
+  WHEN 'EM_DIAGNOSTICO'       THEN 3
+  WHEN 'RECEBIDA'             THEN 4
+  ELSE 5 END`;
 
 const ORDER_WITH_RELATIONS = {
   vehicle: true,
@@ -31,8 +40,44 @@ class PrismaOrderRepository extends IOrderRepository {
     });
   }
 
-  async listOrders() {
-    return prisma.orderService.findMany({ include: ORDER_WITH_RELATIONS });
+  async listOrders({ status, page = 1, limit = 20 } = {}) {
+    const skip = (page - 1) * limit;
+
+    const statusFilter = status
+      ? Prisma.sql`AND status = ${status}`
+      : Prisma.empty;
+
+    // Step 1: get ordered IDs via raw SQL (CASE WHEN not supported in Prisma orderBy)
+    const rows = await prisma.$queryRaw`
+      SELECT id FROM "OrderService"
+      WHERE status NOT IN ('FINALIZADA', 'ENTREGUE')
+      ${statusFilter}
+      ORDER BY
+        ${Prisma.raw(STATUS_PRIORITY)} ASC,
+        id ASC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    const ids = rows.map(r => Number(r.id));
+
+    // Step 2: load full objects with relations
+    const unsorted = await prisma.orderService.findMany({
+      where: { id: { in: ids } },
+      include: ORDER_WITH_RELATIONS,
+    });
+
+    // Step 3: restore SQL order (findMany doesn't preserve IN order)
+    const byId = new Map(unsorted.map(o => [o.id, o]));
+    const data = ids.map(id => byId.get(id));
+
+    const total = await prisma.orderService.count({
+      where: {
+        status: { notIn: EXCLUDED_STATUSES },
+        ...(status ? { status } : {}),
+      },
+    });
+
+    return { data, total, page, limit, pages: Math.ceil(total / limit) };
   }
 
   async updateOrder(id, data) {

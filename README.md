@@ -151,6 +151,20 @@ Usuário criado pelo seed:
 | Senha | Admin123! |
 | Role | ATTENDANT |
 
+## Endpoints Obrigatórios — Fase 02
+
+> Estes cinco endpoints são os requisitos principais entregues na **Fase 02** do Tech Challenge FIAP SOAT.
+
+| # | Método | Rota | Descrição |
+|---|---|---|---|
+| 1 | `POST` | `/api/orders` | **Abertura de Ordem de Serviço** — cria nova OS com status `RECEBIDA` |
+| 2 | `GET` | `/api/orders` | **Listagem de Ordens de Serviço** — retorna todas as OS com filtro por status |
+| 3 | `PATCH` | `/api/orders/:id/status` | **Atualização de status da OS** — avança o status respeitando a máquina de estados |
+| 4 | `GET` | `/api/track/:externalId` | **Consulta de status da OS** — rota pública (sem JWT), cliente acompanha pelo UUID |
+| 5 | `POST` | `/api/track/:externalId/approve` | **Aprovação de orçamento** — cliente aprova ou reprova (`AGUARDANDO_APROVACAO → EM_EXECUCAO / CANCELADA`) |
+
+---
+
 ## Rotas
 
 > Rotas protegidas exigem header `Authorization: Bearer <token>`.

@@ -27,145 +27,414 @@
       "User": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "João Silva" },
-          "email": { "type": "string", "format": "email", "example": "joao@email.com" },
-          "role": { "type": "string", "enum": ["ATTENDANT", "MECHANIC"], "example": "ATTENDANT" },
-          "createdAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ATTENDANT",
+              "MECHANIC"
+            ],
+            "example": "ATTENDANT"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          }
         }
       },
       "ClientPF": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "João Silva" },
-          "cpf": { "type": "string", "example": "12345678901" },
-          "email": { "type": "string", "format": "email", "example": "joao@email.com" },
-          "address": { "type": "string", "example": "Rua das Flores" },
-          "number": { "type": "string", "example": "123" },
-          "state": { "type": "string", "example": "SP" },
-          "cep": { "type": "string", "example": "01234567" },
-          "vehicles": { "type": "array", "items": { "$ref": "#/components/schemas/Vehicle" } },
-          "orders": { "type": "array", "items": { "$ref": "#/components/schemas/OrderService" } }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "cpf": {
+            "type": "string",
+            "example": "12345678901"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "joao@email.com"
+          },
+          "address": {
+            "type": "string",
+            "example": "Rua das Flores"
+          },
+          "number": {
+            "type": "string",
+            "example": "123"
+          },
+          "state": {
+            "type": "string",
+            "example": "SP"
+          },
+          "cep": {
+            "type": "string",
+            "example": "01234567"
+          },
+          "vehicles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Vehicle"
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderService"
+            }
+          }
         }
       },
       "ClientPJ": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Empresa XYZ Ltda" },
-          "fantasyName": { "type": "string", "example": "Empresa XYZ" },
-          "companyName": { "type": "string", "example": "Empresa XYZ Ltda" },
-          "cnpj": { "type": "string", "example": "12345678000123" },
-          "email": { "type": "string", "format": "email", "example": "contato@empresa.com" },
-          "address": { "type": "string", "example": "Av. Paulista" },
-          "number": { "type": "string", "example": "1000" },
-          "state": { "type": "string", "example": "SP" },
-          "cep": { "type": "string", "example": "01310100" },
-          "legalResponsible": { "type": "string", "example": "João Silva" },
-          "orders": { "type": "array", "items": { "$ref": "#/components/schemas/OrderService" } }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Empresa XYZ Ltda"
+          },
+          "fantasyName": {
+            "type": "string",
+            "example": "Empresa XYZ"
+          },
+          "companyName": {
+            "type": "string",
+            "example": "Empresa XYZ Ltda"
+          },
+          "cnpj": {
+            "type": "string",
+            "example": "12345678000123"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "contato@empresa.com"
+          },
+          "address": {
+            "type": "string",
+            "example": "Av. Paulista"
+          },
+          "number": {
+            "type": "string",
+            "example": "1000"
+          },
+          "state": {
+            "type": "string",
+            "example": "SP"
+          },
+          "cep": {
+            "type": "string",
+            "example": "01310100"
+          },
+          "legalResponsible": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderService"
+            }
+          }
         }
       },
       "Vehicle": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "plate": { "type": "string", "example": "ABC1234" },
-          "model": { "type": "string", "example": "Civic" },
-          "year": { "type": "integer", "example": 2020 },
-          "color": { "type": "string", "example": "Preto" },
-          "clientPFId": { "type": "integer", "example": 1 },
-          "orders": { "type": "array", "items": { "$ref": "#/components/schemas/OrderService" } }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "plate": {
+            "type": "string",
+            "example": "ABC1234"
+          },
+          "model": {
+            "type": "string",
+            "example": "Civic"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2020
+          },
+          "color": {
+            "type": "string",
+            "example": "Preto"
+          },
+          "clientPFId": {
+            "type": "integer",
+            "example": 1
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderService"
+            }
+          }
         }
       },
       "Service": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Troca de óleo" },
-          "slaMinutes": { "type": "integer", "example": 60 },
-          "price": { "type": "number", "format": "float", "example": 80.0 }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Troca de óleo"
+          },
+          "slaMinutes": {
+            "type": "integer",
+            "example": 60
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 80.0
+          }
         }
       },
       "Part": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "name": { "type": "string", "example": "Filtro de óleo" },
-          "type": { "type": "string", "example": "Filtro" },
-          "model": { "type": "string", "example": "Honda Civic" },
-          "color": { "type": "string", "example": "Preto" },
-          "quantity": { "type": "integer", "example": 10 },
-          "price": { "type": "number", "format": "float", "example": 35.0 }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Filtro de óleo"
+          },
+          "type": {
+            "type": "string",
+            "example": "Filtro"
+          },
+          "model": {
+            "type": "string",
+            "example": "Honda Civic"
+          },
+          "color": {
+            "type": "string",
+            "example": "Preto"
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 10
+          },
+          "price": {
+            "type": "number",
+            "format": "float",
+            "example": 35.0
+          }
         }
       },
       "OrderService": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "externalId": { "type": "string", "example": "550e8400-e29b-41d4-a716-446655440000" },
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "externalId": {
+            "type": "string",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
           "status": {
             "type": "string",
-            "enum": ["RECEBIDA", "EM_DIAGNOSTICO", "AGUARDANDO_APROVACAO", "EM_EXECUCAO", "FINALIZADA", "ENTREGUE"],
+            "enum": [
+              "RECEBIDA",
+              "EM_DIAGNOSTICO",
+              "AGUARDANDO_APROVACAO",
+              "EM_EXECUCAO",
+              "FINALIZADA",
+              "ENTREGUE"
+            ],
             "example": "RECEBIDA"
           },
-          "description": { "type": "string", "example": "Troca de óleo e filtros" },
-          "mechanicName": { "type": "string", "example": "João Silva" },
-          "budgetValue": { "type": "number", "format": "float", "example": 150.0 },
-          "startAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" },
-          "endAt": { "type": "string", "format": "date-time", "example": "2024-01-15T12:00:00Z" },
-          "updatedAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" },
-          "clientPFId": { "type": "integer", "example": 1 },
-          "clientPJId": { "type": "integer", "example": null },
-          "vehicleId": { "type": "integer", "example": 1 },
-          "services": { "type": "array", "items": { "$ref": "#/components/schemas/OrderServiceService" } }
+          "description": {
+            "type": "string",
+            "example": "Troca de óleo e filtros"
+          },
+          "mechanicName": {
+            "type": "string",
+            "example": "João Silva"
+          },
+          "budgetValue": {
+            "type": "number",
+            "format": "float",
+            "example": 150.0
+          },
+          "startAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          },
+          "endAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T12:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          },
+          "clientPFId": {
+            "type": "integer",
+            "example": 1
+          },
+          "clientPJId": {
+            "type": "integer",
+            "example": null
+          },
+          "vehicleId": {
+            "type": "integer",
+            "example": 1
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderServiceService"
+            }
+          }
         }
       },
       "OrderServiceService": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "orderServiceId": { "type": "integer", "example": 1 },
-          "serviceId": { "type": "integer", "example": 1 },
-          "createdAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" },
-          "service": { "$ref": "#/components/schemas/Service" },
-          "parts": { "type": "array", "items": { "$ref": "#/components/schemas/OrderServiceServicePart" } }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "orderServiceId": {
+            "type": "integer",
+            "example": 1
+          },
+          "serviceId": {
+            "type": "integer",
+            "example": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          },
+          "service": {
+            "$ref": "#/components/schemas/Service"
+          },
+          "parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderServiceServicePart"
+            }
+          }
         }
       },
       "OrderServiceServicePart": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "orderServiceServiceId": { "type": "integer", "example": 1 },
-          "partId": { "type": "integer", "example": 1 },
-          "quantity": { "type": "integer", "example": 2 },
-          "createdAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" },
-          "part": { "$ref": "#/components/schemas/Part" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "orderServiceServiceId": {
+            "type": "integer",
+            "example": 1
+          },
+          "partId": {
+            "type": "integer",
+            "example": 1
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          },
+          "part": {
+            "$ref": "#/components/schemas/Part"
+          }
         }
       },
       "Budget": {
         "type": "object",
         "properties": {
-          "id": { "type": "integer", "example": 1 },
-          "totalBudget": { "type": "number", "format": "float", "example": 550.0 },
-          "orders": { "type": "array", "items": { "$ref": "#/components/schemas/OrderService" } },
-          "createdAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" },
-          "updatedAt": { "type": "string", "format": "date-time", "example": "2024-01-15T10:00:00Z" }
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "totalBudget": {
+            "type": "number",
+            "format": "float",
+            "example": 550.0
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderService"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:00:00Z"
+          }
         }
       },
       "Error": {
         "type": "object",
         "properties": {
-          "message": { "type": "string", "example": "Recurso não encontrado." }
+          "message": {
+            "type": "string",
+            "example": "Recurso não encontrado."
+          }
         }
       }
     }
   },
-  "security": [{ "bearerAuth": [] }],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "paths": {
     "/auth/login": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Autenticar usuário",
         "security": [],
         "requestBody": {
@@ -174,10 +443,20 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["email", "password"],
+                "required": [
+                  "email",
+                  "password"
+                ],
                 "properties": {
-                  "email": { "type": "string", "format": "email", "example": "joao@email.com" },
-                  "password": { "type": "string", "example": "senha123" }
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@email.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "senha123"
+                  }
                 }
               }
             }
@@ -191,19 +470,33 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIs..." }
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIs..."
+                    }
                   }
                 }
               }
             }
           },
-          "401": { "description": "Credenciais inválidas", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "401": {
+            "description": "Credenciais inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/auth/register": {
       "post": {
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "summary": "Registrar novo usuário",
         "security": [],
         "requestBody": {
@@ -212,12 +505,34 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "email", "password", "role"],
+                "required": [
+                  "name",
+                  "email",
+                  "password",
+                  "role"
+                ],
                 "properties": {
-                  "name": { "type": "string", "example": "João Silva" },
-                  "email": { "type": "string", "format": "email", "example": "joao@email.com" },
-                  "password": { "type": "string", "example": "senha123" },
-                  "role": { "type": "string", "enum": ["ATTENDANT", "MECHANIC"], "example": "ATTENDANT" }
+                  "name": {
+                    "type": "string",
+                    "example": "João Silva"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@email.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "senha123"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "ATTENDANT",
+                      "MECHANIC"
+                    ],
+                    "example": "ATTENDANT"
+                  }
                 }
               }
             }
@@ -226,15 +541,32 @@
         "responses": {
           "201": {
             "description": "Usuário criado com sucesso",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
           },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/clients/pf": {
       "post": {
-        "tags": ["Clientes PF"],
+        "tags": [
+          "Clientes PF"
+        ],
         "summary": "Criar cliente pessoa física",
         "requestBody": {
           "required": true,
@@ -242,72 +574,215 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "cpf", "email"],
+                "required": [
+                  "name",
+                  "cpf",
+                  "email"
+                ],
                 "properties": {
-                  "name": { "type": "string", "example": "João Silva" },
-                  "cpf": { "type": "string", "example": "12345678901" },
-                  "email": { "type": "string", "format": "email", "example": "joao@email.com" },
-                  "address": { "type": "string", "example": "Rua das Flores" },
-                  "number": { "type": "string", "example": "123" },
-                  "state": { "type": "string", "example": "SP" },
-                  "cep": { "type": "string", "example": "01234567" }
+                  "name": {
+                    "type": "string",
+                    "example": "João Silva"
+                  },
+                  "cpf": {
+                    "type": "string",
+                    "example": "12345678901"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "joao@email.com"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "Rua das Flores"
+                  },
+                  "number": {
+                    "type": "string",
+                    "example": "123"
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "SP"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "example": "01234567"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Cliente criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPF" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Cliente criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPF"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Clientes PF"],
+        "tags": [
+          "Clientes PF"
+        ],
         "summary": "Listar clientes pessoa física",
         "responses": {
           "200": {
             "description": "Lista de clientes PF",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ClientPF" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientPF"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/clients/pf/{id}": {
       "get": {
-        "tags": ["Clientes PF"],
+        "tags": [
+          "Clientes PF"
+        ],
         "summary": "Buscar cliente PF por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Cliente encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPF" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Cliente encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPF"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Clientes PF"],
+        "tags": [
+          "Clientes PF"
+        ],
         "summary": "Atualizar cliente PF",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPF" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientPF"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Cliente atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPF" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Cliente atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPF"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Clientes PF"],
+        "tags": [
+          "Clientes PF"
+        ],
         "summary": "Remover cliente PF",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removido com sucesso" },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removido com sucesso"
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/clients/pj": {
       "post": {
-        "tags": ["Clientes PJ"],
+        "tags": [
+          "Clientes PJ"
+        ],
         "summary": "Criar cliente pessoa jurídica",
         "requestBody": {
           "required": true,
@@ -315,75 +790,227 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "cnpj", "email"],
+                "required": [
+                  "name",
+                  "cnpj",
+                  "email"
+                ],
                 "properties": {
-                  "name": { "type": "string", "example": "Empresa XYZ Ltda" },
-                  "fantasyName": { "type": "string", "example": "Empresa XYZ" },
-                  "companyName": { "type": "string", "example": "Empresa XYZ Ltda" },
-                  "cnpj": { "type": "string", "example": "12345678000123" },
-                  "email": { "type": "string", "format": "email", "example": "contato@empresa.com" },
-                  "address": { "type": "string", "example": "Av. Paulista" },
-                  "number": { "type": "string", "example": "1000" },
-                  "state": { "type": "string", "example": "SP" },
-                  "cep": { "type": "string", "example": "01310100" },
-                  "legalResponsible": { "type": "string", "example": "João Silva" }
+                  "name": {
+                    "type": "string",
+                    "example": "Empresa XYZ Ltda"
+                  },
+                  "fantasyName": {
+                    "type": "string",
+                    "example": "Empresa XYZ"
+                  },
+                  "companyName": {
+                    "type": "string",
+                    "example": "Empresa XYZ Ltda"
+                  },
+                  "cnpj": {
+                    "type": "string",
+                    "example": "12345678000123"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "contato@empresa.com"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "Av. Paulista"
+                  },
+                  "number": {
+                    "type": "string",
+                    "example": "1000"
+                  },
+                  "state": {
+                    "type": "string",
+                    "example": "SP"
+                  },
+                  "cep": {
+                    "type": "string",
+                    "example": "01310100"
+                  },
+                  "legalResponsible": {
+                    "type": "string",
+                    "example": "João Silva"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Cliente criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPJ" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Cliente criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPJ"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Clientes PJ"],
+        "tags": [
+          "Clientes PJ"
+        ],
         "summary": "Listar clientes pessoa jurídica",
         "responses": {
           "200": {
             "description": "Lista de clientes PJ",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ClientPJ" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClientPJ"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/clients/pj/{id}": {
       "get": {
-        "tags": ["Clientes PJ"],
+        "tags": [
+          "Clientes PJ"
+        ],
         "summary": "Buscar cliente PJ por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Cliente encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPJ" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Cliente encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPJ"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Clientes PJ"],
+        "tags": [
+          "Clientes PJ"
+        ],
         "summary": "Atualizar cliente PJ",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPJ" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientPJ"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Cliente atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientPJ" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Cliente atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientPJ"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Clientes PJ"],
+        "tags": [
+          "Clientes PJ"
+        ],
         "summary": "Remover cliente PJ",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removido com sucesso" },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removido com sucesso"
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/vehicles": {
       "post": {
-        "tags": ["Veículos"],
+        "tags": [
+          "Veículos"
+        ],
         "summary": "Criar veículo",
         "requestBody": {
           "required": true,
@@ -391,70 +1018,207 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["plate", "model", "year", "clientPFId"],
+                "required": [
+                  "plate",
+                  "model",
+                  "year",
+                  "clientPFId"
+                ],
                 "properties": {
-                  "plate": { "type": "string", "example": "ABC1234" },
-                  "model": { "type": "string", "example": "Civic" },
-                  "year": { "type": "integer", "example": 2020 },
-                  "color": { "type": "string", "example": "Preto" },
-                  "clientPFId": { "type": "integer", "example": 1 }
+                  "plate": {
+                    "type": "string",
+                    "example": "ABC1234"
+                  },
+                  "model": {
+                    "type": "string",
+                    "example": "Civic"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "example": 2020
+                  },
+                  "color": {
+                    "type": "string",
+                    "example": "Preto"
+                  },
+                  "clientPFId": {
+                    "type": "integer",
+                    "example": 1
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Veículo criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vehicle" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Veículo criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vehicle"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Veículos"],
+        "tags": [
+          "Veículos"
+        ],
         "summary": "Listar veículos",
         "responses": {
           "200": {
             "description": "Lista de veículos",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Vehicle" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vehicle"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/vehicles/{id}": {
       "get": {
-        "tags": ["Veículos"],
+        "tags": [
+          "Veículos"
+        ],
         "summary": "Buscar veículo por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Veículo encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vehicle" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Veículo encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vehicle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Veículos"],
+        "tags": [
+          "Veículos"
+        ],
         "summary": "Atualizar veículo",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vehicle" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Vehicle"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Veículo atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Vehicle" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Veículo atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vehicle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Veículos"],
+        "tags": [
+          "Veículos"
+        ],
         "summary": "Remover veículo",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removido com sucesso" },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removido com sucesso"
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/services": {
       "post": {
-        "tags": ["Serviços"],
+        "tags": [
+          "Serviços"
+        ],
         "summary": "Criar serviço",
         "requestBody": {
           "required": true,
@@ -462,68 +1226,199 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "slaMinutes", "price"],
+                "required": [
+                  "name",
+                  "slaMinutes",
+                  "price"
+                ],
                 "properties": {
-                  "name": { "type": "string", "example": "Troca de óleo" },
-                  "slaMinutes": { "type": "integer", "example": 60 },
-                  "price": { "type": "number", "format": "float", "example": 80.0 }
+                  "name": {
+                    "type": "string",
+                    "example": "Troca de óleo"
+                  },
+                  "slaMinutes": {
+                    "type": "integer",
+                    "example": 60
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 80.0
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Serviço criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Serviço criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Serviços"],
+        "tags": [
+          "Serviços"
+        ],
         "summary": "Listar serviços",
         "responses": {
           "200": {
             "description": "Lista de serviços",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Service" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Service"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/services/{id}": {
       "get": {
-        "tags": ["Serviços"],
+        "tags": [
+          "Serviços"
+        ],
         "summary": "Buscar serviço por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Serviço encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Serviço encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Serviços"],
+        "tags": [
+          "Serviços"
+        ],
         "summary": "Atualizar serviço",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Service"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Serviço atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Service" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Serviço atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Service"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Serviços"],
+        "tags": [
+          "Serviços"
+        ],
         "summary": "Remover serviço",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removido com sucesso" },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removido com sucesso"
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/parts": {
       "post": {
-        "tags": ["Peças"],
+        "tags": [
+          "Peças"
+        ],
         "summary": "Criar peça",
         "requestBody": {
           "required": true,
@@ -531,133 +1426,372 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["name", "type", "quantity", "price"],
+                "required": [
+                  "name",
+                  "type",
+                  "quantity",
+                  "price"
+                ],
                 "properties": {
-                  "name": { "type": "string", "example": "Filtro de óleo" },
-                  "type": { "type": "string", "example": "Filtro" },
-                  "model": { "type": "string", "example": "Honda Civic" },
-                  "color": { "type": "string", "example": "Preto" },
-                  "quantity": { "type": "integer", "example": 10 },
-                  "price": { "type": "number", "format": "float", "example": 35.0 }
+                  "name": {
+                    "type": "string",
+                    "example": "Filtro de óleo"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "Filtro"
+                  },
+                  "model": {
+                    "type": "string",
+                    "example": "Honda Civic"
+                  },
+                  "color": {
+                    "type": "string",
+                    "example": "Preto"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 10
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 35.0
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Peça criada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Part" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Peça criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Part"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Peças"],
+        "tags": [
+          "Peças"
+        ],
         "summary": "Listar peças",
         "responses": {
           "200": {
             "description": "Lista de peças",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Part" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Part"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/parts/{id}": {
       "get": {
-        "tags": ["Peças"],
+        "tags": [
+          "Peças"
+        ],
         "summary": "Buscar peça por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Peça encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Part" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Peça encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Part"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Peças"],
+        "tags": [
+          "Peças"
+        ],
         "summary": "Atualizar peça",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Part" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Part"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Peça atualizada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Part" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Peça atualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Part"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Peças"],
+        "tags": [
+          "Peças"
+        ],
         "summary": "Remover peça",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removida com sucesso" },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removida com sucesso"
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/orders": {
       "post": {
-        "tags": ["Ordens de Serviço"],
-        "summary": "Criar ordem de serviço",
+        "tags": [
+          "⭐ Fase 02 — Requisitos Obrigatórios",
+          "Ordens de Serviço"
+        ],
+        "summary": "Abertura de Ordem de Serviço (OS)",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["vehicleId"],
+                "required": [
+                  "vehicleId"
+                ],
                 "properties": {
-                  "vehicleId": { "type": "integer", "example": 1 },
-                  "clientPFId": { "type": "integer", "example": 1 },
-                  "clientPJId": { "type": "integer", "example": null },
-                  "description": { "type": "string", "example": "Troca de óleo e filtros" },
-                  "mechanicName": { "type": "string", "example": "José Santos" }
+                  "vehicleId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "clientPFId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "clientPJId": {
+                    "type": "integer",
+                    "example": null
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Troca de óleo e filtros"
+                  },
+                  "mechanicName": {
+                    "type": "string",
+                    "example": "José Santos"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Ordem criada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderService" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Ordem criada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderService"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Ordens de Serviço"],
-        "summary": "Listar ordens de serviço",
+        "tags": [
+          "⭐ Fase 02 — Requisitos Obrigatórios",
+          "Ordens de Serviço"
+        ],
+        "summary": "Listagem de Ordens de Serviço",
         "responses": {
           "200": {
             "description": "Lista de ordens",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/OrderService" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderService"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/orders/{id}": {
       "get": {
-        "tags": ["Ordens de Serviço"],
+        "tags": [
+          "Ordens de Serviço"
+        ],
         "summary": "Buscar ordem por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Ordem encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderService" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Ordem encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderService"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/orders/{id}/status": {
       "patch": {
-        "tags": ["Ordens de Serviço"],
-        "summary": "Atualizar status da ordem",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "tags": [
+          "⭐ Fase 02 — Requisitos Obrigatórios",
+          "Ordens de Serviço"
+        ],
+        "summary": "Atualização de status da OS",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["status"],
+                "required": [
+                  "status"
+                ],
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": ["RECEBIDA", "EM_DIAGNOSTICO", "AGUARDANDO_APROVACAO", "EM_EXECUCAO", "FINALIZADA", "ENTREGUE"],
+                    "enum": [
+                      "RECEBIDA",
+                      "EM_DIAGNOSTICO",
+                      "AGUARDANDO_APROVACAO",
+                      "EM_EXECUCAO",
+                      "FINALIZADA",
+                      "ENTREGUE"
+                    ],
                     "example": "EM_EXECUCAO"
                   }
                 }
@@ -666,77 +1800,202 @@
           }
         },
         "responses": {
-          "200": { "description": "Status atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderService" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Status atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderService"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/orders/{id}/service": {
       "post": {
-        "tags": ["Ordens de Serviço"],
+        "tags": [
+          "Ordens de Serviço"
+        ],
         "summary": "Adicionar serviço à ordem",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["serviceId"],
+                "required": [
+                  "serviceId"
+                ],
                 "properties": {
-                  "serviceId": { "type": "integer", "example": 1 }
+                  "serviceId": {
+                    "type": "integer",
+                    "example": 1
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Serviço adicionado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderServiceService" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Serviço adicionado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderServiceService"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/orders/{id}/part": {
       "post": {
-        "tags": ["Ordens de Serviço"],
+        "tags": [
+          "Ordens de Serviço"
+        ],
         "summary": "Adicionar peça à ordem",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["orderServiceServiceId", "partId", "quantity"],
+                "required": [
+                  "orderServiceServiceId",
+                  "partId",
+                  "quantity"
+                ],
                 "properties": {
-                  "orderServiceServiceId": { "type": "integer", "example": 1 },
-                  "partId": { "type": "integer", "example": 1 },
-                  "quantity": { "type": "integer", "example": 2 }
+                  "orderServiceServiceId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "partId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 2
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Peça adicionada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderServiceServicePart" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Peça adicionada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderServiceServicePart"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/orders/{id}/progress": {
       "get": {
-        "tags": ["Ordens de Serviço"],
+        "tags": [
+          "Ordens de Serviço"
+        ],
         "summary": "Consultar progresso da ordem",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Progresso da ordem", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderService" } } } },
-          "404": { "description": "Não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Progresso da ordem",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderService"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/budgets": {
       "post": {
-        "tags": ["Orçamentos"],
+        "tags": [
+          "Orçamentos"
+        ],
         "summary": "Criar orçamento",
         "requestBody": {
           "required": true,
@@ -744,81 +2003,248 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["totalBudget"],
+                "required": [
+                  "totalBudget"
+                ],
                 "properties": {
-                  "totalBudget": { "type": "number", "format": "float", "example": 550.0 }
+                  "totalBudget": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 550.0
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Orçamento criado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Budget" } } } },
-          "400": { "description": "Dados inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "201": {
+            "description": "Orçamento criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "get": {
-        "tags": ["Orçamentos"],
+        "tags": [
+          "Orçamentos"
+        ],
         "summary": "Listar orçamentos",
         "responses": {
           "200": {
             "description": "Lista de orçamentos",
-            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Budget" } } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Budget"
+                  }
+                }
+              }
+            }
           }
         }
       }
     },
     "/budgets/{id}": {
       "get": {
-        "tags": ["Orçamentos"],
+        "tags": [
+          "Orçamentos"
+        ],
         "summary": "Buscar orçamento por ID",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "200": { "description": "Orçamento encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Budget" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Orçamento encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "put": {
-        "tags": ["Orçamentos"],
+        "tags": [
+          "Orçamentos"
+        ],
         "summary": "Atualizar orçamento",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Budget" } } }
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Budget"
+              }
+            }
+          }
         },
         "responses": {
-          "200": { "description": "Orçamento atualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Budget" } } } },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Orçamento atualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Budget"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
-        "tags": ["Orçamentos"],
+        "tags": [
+          "Orçamentos"
+        ],
         "summary": "Remover orçamento",
-        "parameters": [{ "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
-          "204": { "description": "Removido com sucesso" },
-          "404": { "description": "Não encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "204": {
+            "description": "Removido com sucesso"
+          },
+          "404": {
+            "description": "Não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/track/{externalId}": {
       "get": {
-        "tags": ["Rastreamento"],
-        "summary": "Consultar progresso da ordem pelo ID externo",
+        "tags": [
+          "⭐ Fase 02 — Requisitos Obrigatórios",
+          "Rastreamento"
+        ],
+        "summary": "Consulta de status da OS (pública, sem JWT)",
         "security": [],
-        "parameters": [{ "in": "path", "name": "externalId", "required": true, "schema": { "type": "string", "format": "uuid" }, "example": "550e8400-e29b-41d4-a716-446655440000" }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "externalId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
         "responses": {
-          "200": { "description": "Progresso da ordem", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OrderService" } } } },
-          "404": { "description": "Ordem não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "200": {
+            "description": "Progresso da ordem",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderService"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ordem não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/track/{externalId}/approve": {
       "post": {
-        "tags": ["Rastreamento"],
-        "summary": "Aprovar orçamento da ordem",
+        "tags": [
+          "⭐ Fase 02 — Requisitos Obrigatórios",
+          "Rastreamento"
+        ],
+        "summary": "Aprovação de orçamento pelo cliente",
         "security": [],
-        "parameters": [{ "in": "path", "name": "externalId", "required": true, "schema": { "type": "string", "format": "uuid" }, "example": "550e8400-e29b-41d4-a716-446655440000" }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "externalId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Ordem aprovada",
@@ -827,20 +2253,36 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "order": { "$ref": "#/components/schemas/OrderService" },
-                    "message": { "type": "string", "example": "Ordem aprovada com sucesso. Execução iniciada." }
+                    "order": {
+                      "$ref": "#/components/schemas/OrderService"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Ordem aprovada com sucesso. Execução iniciada."
+                    }
                   }
                 }
               }
             }
           },
-          "404": { "description": "Ordem não encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+          "404": {
+            "description": "Ordem não encontrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/metrics/average-execution-time": {
       "get": {
-        "tags": ["Métricas"],
+        "tags": [
+          "Métricas"
+        ],
         "summary": "Tempo médio de execução das ordens",
         "responses": {
           "200": {
@@ -850,7 +2292,11 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "averageMinutes": { "type": "number", "format": "float", "example": 120.5 }
+                    "averageMinutes": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 120.5
+                    }
                   }
                 }
               }
@@ -859,5 +2305,11 @@
         }
       }
     }
-  }
+  },
+  "tags": [
+    {
+      "name": "⭐ Fase 02 — Requisitos Obrigatórios",
+      "description": "Os cinco endpoints obrigatórios entregues na **Fase 02** do Tech Challenge FIAP SOAT: Abertura de OS, Listagem de OS, Atualização de status, Consulta pública de status e Aprovação de orçamento."
+    }
+  ]
 }

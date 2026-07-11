@@ -30,7 +30,7 @@ on:
 env:
   AWS_REGION:       ${{ vars.AWS_REGION || 'us-east-1' }}
   EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME || 'oficina-mecanica-dev' }}
-  ECR_REPOSITORY:   oficina-mecanica-app
+  ECR_REPOSITORY:   oficina-mecanica-app-fiap-andre-rq-20260707
   TF_VERSION:       '1.5.7'
   NAMESPACE:        'oficina-mecanica'
 
@@ -146,6 +146,19 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Importar ECR no state se já existir
+        run: |
+          ECR_NAME="${{ env.ECR_REPOSITORY }}"
+          if aws ecr describe-repositories --repository-names "$ECR_NAME" \
+               --region "${{ env.AWS_REGION }}" 2>/dev/null; then
+            terraform state list | grep -q "aws_ecr_repository.app" || \
+              terraform import aws_ecr_repository.app "$ECR_NAME"
+            echo "ECR $ECR_NAME sincronizado no state."
+          fi
+        env:
+          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+        working-directory: infra
 
       - name: Terraform Plan
         id: plan
@@ -269,10 +282,10 @@ jobs:
             --from-literal=DATABASE_URL="$DB_URL" \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Aplicar StatefulSet e Service do PostgreSQL (in-cluster)
+      - name: Instalar metrics-server (necessário para HPA)
         run: |
-          kubectl apply -f k8s/postgres-statefulset.yaml
-          kubectl apply -f k8s/postgres-service.yaml
+          kubectl apply -f k8s/metrics-server.yaml
+          kubectl rollout status deployment/metrics-server -n kube-system --timeout=120s
 
       - name: Aplicar Deployment, Service e HPA da aplicação
         run: |
@@ -286,6 +299,15 @@ jobs:
           kubectl rollout status deployment/oficina-app \
             --namespace="${{ env.NAMESPACE }}" \
             --timeout=300s
+
+      - name: Executar seed do banco de dados
+        run: |
+          POD=$(kubectl get pods -n "${{ env.NAMESPACE }}" \
+            -l app=oficina-app \
+            --field-selector=status.phase=Running \
+            -o jsonpath='{.items[0].metadata.name}')
+          echo "Executando seed no pod: $POD"
+          kubectl exec -n "${{ env.NAMESPACE }}" "$POD" -- node prisma/seed.js
 
       - name: Estado do cluster após deploy
         if: always()

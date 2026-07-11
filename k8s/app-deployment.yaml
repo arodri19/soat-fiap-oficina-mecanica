@@ -7,15 +7,15 @@ metadata:
     app: oficina-app
     app.kubernetes.io/name: oficina-mecanica
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: oficina-app
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1       # sobe 1 pod novo antes de derrubar o antigo
-      maxUnavailable: 0 # zero downtime durante o deploy
+      maxSurge: 0
+      maxUnavailable: 1
   template:
     metadata:
       labels:
@@ -26,7 +26,7 @@ spec:
       # por isso é seguro rodar em paralelo quando múltiplos pods iniciam juntos.
       initContainers:
         - name: migrate
-          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app-fiap-andre-rq-20260707:latest
           imagePullPolicy: Always
           command: ["npx", "prisma", "migrate", "deploy"]
           env:
@@ -37,15 +37,15 @@ spec:
                   key: DATABASE_URL
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "50m"
+              memory: "64Mi"
             limits:
-              cpu: "300m"
-              memory: "256Mi"
+              cpu: "200m"
+              memory: "128Mi"
 
       containers:
         - name: app
-          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app:latest
+          image: 769628268406.dkr.ecr.us-east-1.amazonaws.com/oficina-mecanica-app-fiap-andre-rq-20260707:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
@@ -90,8 +90,8 @@ spec:
 
           resources:
             requests:
-              cpu: "100m"    # base mínima garantida por pod
-              memory: "128Mi"
+              cpu: "50m"
+              memory: "96Mi"
             limits:
-              cpu: "500m"    # limite para o HPA calcular % de uso
-              memory: "512Mi"
+              cpu: "200m"
+              memory: "192Mi"

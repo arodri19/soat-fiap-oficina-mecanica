@@ -17,11 +17,11 @@ class OrderApplicationService {
   }
 
   async createOrder(data) {
-    return new CreateOrderUseCase(this.orderRepository).execute(data);
+    return new CreateOrderUseCase(this.orderRepository, this.partRepository).execute(data);
   }
 
-  async listOrders() {
-    return new ListOrdersUseCase(this.orderRepository).execute();
+  async listOrders({ status, page, limit } = {}) {
+    return new ListOrdersUseCase(this.orderRepository).execute({ status, page, limit });
   }
 
   async getOrder(id) {
