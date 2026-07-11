@@ -2,6 +2,17 @@
 
 Backend em **Node.js / Express** com **PostgreSQL** e **Prisma ORM**, construído com **Clean Architecture** e práticas de **Clean Code**.
 
+## Sobre o Projeto e Objetivos da Fase 02
+
+Sistema de gestão para oficinas mecânicas: controla clientes, veículos, ordens de serviço, orçamentos, peças e estoque, do recebimento do veículo até a entrega ao cliente. É o Tech Challenge do curso **SOAT FIAP**.
+
+A **Fase 01** entregou a API funcional — Clean Architecture, regras de domínio, testes automatizados e containerização com Docker Compose. A **Fase 02** evolui o projeto para rodar em produção na nuvem, adicionando:
+
+- **Infraestrutura como Código (Terraform):** provisiona VPC, cluster Kubernetes gerenciado (EKS), banco gerenciado (RDS PostgreSQL) e registro de imagens (ECR) na AWS
+- **Deploy em Kubernetes:** manifestos declarativos para a aplicação (Deployment, Service, HPA) e, para uso local sem RDS, um StatefulSet de PostgreSQL
+- **Autoscaling horizontal (HPA)** baseado em utilização de CPU e memória
+- **Pipeline de CI/CD (GitHub Actions):** testes → build e push de imagem no ECR → provisionamento de infraestrutura → deploy no cluster
+
 ## Funcionalidades
 
 - Autenticação com JWT e bcrypt (roles: `ATTENDANT`, `MECHANIC`)
@@ -26,7 +37,8 @@ Backend em **Node.js / Express** com **PostgreSQL** e **Prisma ORM**, construíd
 | Banco de dados | PostgreSQL 16 |
 | Autenticação | JWT + bcrypt |
 | Testes | Jest + Supertest |
-| Infraestrutura | Docker Compose (multi-stage build) |
+| Infraestrutura | Docker Compose (dev), Terraform, AWS (EKS, RDS, ECR, VPC), Kubernetes |
+| CI/CD | GitHub Actions |
 | Documentação | Swagger UI |
 
 ## Arquitetura
@@ -100,6 +112,81 @@ Com base no **ADR 0001**, o **PostgreSQL** foi escolhido por:
 
 Para mais detalhes, consulte o [ADR 0001](docs/adr/0001-uso-de-postgresql-como-banco-de-dados.md).
 
+### Infraestrutura Provisionada
+
+Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), organizado em três módulos reutilizáveis ([`vpc`](infra/modules/vpc/), [`eks`](infra/modules/eks/), [`rds`](infra/modules/rds/)) mais o repositório ECR declarado em [`infra/main.tf`](infra/main.tf):
+
+```
+                          AWS
+┌──────────────────────────────────────────────────────────────────────────┐
+│  VPC (10.0.0.0/16) — 2 AZs                                                │
+│                                                                            │
+│  ┌─────────────────────────┐        ┌─────────────────────────┐          │
+│  │ Subnet pública (AZ-a)     │        │ Subnet pública (AZ-b)     │          │
+│  │  Internet GW · NAT GW     │        │  Internet GW · NAT GW     │          │
+│  └────────────┬─────────────┘        └────────────┬─────────────┘          │
+│               │  Service type=LoadBalancer (ELB)   │                       │
+│  ┌────────────▼─────────────┐        ┌────────────▼─────────────┐          │
+│  │ Subnet privada (AZ-a)     │        │ Subnet privada (AZ-b)     │          │
+│  │                           │        │                           │          │
+│  │  EKS Node Group (EC2)     │        │  EKS Node Group (EC2)     │          │
+│  │   └─ Pods: oficina-app    │        │   └─ Pods: oficina-app    │          │
+│  │                           │        │                           │          │
+│  │  RDS PostgreSQL 16 ◄──────┼────────┼── acessível só pelos      │          │
+│  │  (subnet privada)         │        │   Security Groups do EKS  │          │
+│  └───────────────────────────┘        └───────────────────────────┘          │
+│                                                                            │
+│  EKS Control Plane (gerenciado pela AWS, fora das subnets do cliente)     │
+│  ECR — oficina-mecanica-app-fiap-andre-rq-20260707                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+Estado do Terraform: S3 (versionado + criptografado) + lock via DynamoDB
+```
+
+| Recurso | Módulo | Detalhes |
+|---|---|---|
+| VPC, subnets, IGW, NAT GW | [`modules/vpc`](infra/modules/vpc/) | 2 subnets públicas + 2 privadas, uma em cada AZ |
+| Cluster EKS + Node Group | [`modules/eks`](infra/modules/eks/) | IAM roles, Security Groups, node group em subnets privadas |
+| RDS PostgreSQL 16 | [`modules/rds`](infra/modules/rds/) | Subnet privada, acesso restrito aos SGs do EKS |
+| Repositório ECR | [`main.tf`](infra/main.tf) | Scan de vulnerabilidades no push, lifecycle policy (mantém 10 imagens) |
+
+### Fluxo de Deploy (CI/CD)
+
+O pipeline roda em dois workflows do GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml) e [`.github/workflows/cd.yml`](.github/workflows/cd.yml), espelhados em [`ci-cd/`](ci-cd/) para referência):
+
+```
+push/dispatch (branch main)
+        │
+        ▼
+┌────────────────────────────────────┐
+│ CI — ci.yml                          │
+│  1. npm ci + jest --coverage         │
+│  2. docker build (multi-stage)       │
+│  3. docker push → ECR (tag <sha7> e latest) │
+└──────────────────┬───────────────────┘
+                    │ workflow_run: success
+                    ▼
+┌────────────────────────────────────────────────┐
+│ CD — cd.yml                                       │
+│  1. guard          → confirma que o CI passou     │
+│  2. bootstrap       → cria bucket S3 + tabela      │
+│                        DynamoDB do state (se preciso) │
+│  3. provision-infra → terraform init/plan/apply    │
+│                        (VPC, EKS, RDS, ECR)         │
+│  4. deploy-k8s      → aws eks update-kubeconfig     │
+│                        kubectl apply (namespace,    │
+│                        configmap, secret c/ RDS,    │
+│                        metrics-server, deployment,  │
+│                        service, hpa)                │
+│                        kubectl rollout status        │
+│                        kubectl exec … prisma seed    │
+└────────────────────────────────────────────────────┘
+```
+
+- O CD dispara automaticamente após o CI concluir com sucesso na `main`, ou manualmente via `workflow_dispatch` (útil para hotfix/rollback, informando `image_tag`).
+- O apply do Terraform só executa quando `terraform plan -detailed-exitcode` indica mudanças pendentes (exitcode `2`), evitando applies desnecessários.
+- Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
+
 ## Como usar
 
 ### Pré-requisitos
@@ -150,6 +237,107 @@ Usuário criado pelo seed:
 | Email | admin@oficina.com |
 | Senha | Admin123! |
 | Role | ATTENDANT |
+
+### Deploy em Kubernetes
+
+Os manifestos ficam em [`k8s/`](k8s/). Há dois cenários de uso:
+
+#### A) Cluster local (minikube/kind) — com PostgreSQL em StatefulSet
+
+Sem depender do RDS, útil para testar os manifestos localmente.
+
+```bash
+minikube start
+
+# Build local da imagem e disponibilização para o cluster
+docker build -t oficina-app:local --target production .
+minikube image load oficina-app:local
+# ajuste "image:" no k8s/app-deployment.yaml para "oficina-app:local" antes de aplicar
+
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml            # valores de exemplo — trocar em produção
+kubectl apply -f k8s/postgres-statefulset.yaml
+kubectl apply -f k8s/postgres-service.yaml
+kubectl apply -f k8s/metrics-server.yaml    # necessário para o HPA
+kubectl apply -f k8s/app-deployment.yaml
+kubectl apply -f k8s/app-service.yaml
+kubectl apply -f k8s/app-hpa.yaml
+
+# expõe o Service type=LoadBalancer localmente
+minikube tunnel
+```
+
+Acompanhar o rollout e o autoscaling:
+
+```bash
+kubectl get pods -n oficina-mecanica -w
+kubectl get hpa -n oficina-mecanica
+```
+
+#### B) Produção (EKS) — via pipeline de CD
+
+Em produção, o cluster e o RDS já existem (provisionados pelo Terraform — veja a seção abaixo) e o deploy é feito pelo job `deploy-k8s` do [`cd.yml`](.github/workflows/cd.yml), que:
+
+1. Configura o `kubectl` com `aws eks update-kubeconfig`
+2. Aplica `namespace`, `configmap` e recria o `secret` com o endpoint real do RDS e as credenciais dos GitHub Secrets
+3. Instala o `metrics-server` (pré-requisito do HPA)
+4. Aplica `app-deployment`, `app-service` e `app-hpa`, aguarda o rollout e roda o seed
+
+Para disparar manualmente (hotfix/rollback), use `workflow_dispatch` no `cd.yml` informando a `image_tag` (SHA curto ou `latest`) e o `environment`.
+
+### Provisionamento de Infraestrutura com Terraform
+
+O provisionamento roda automaticamente no pipeline de CD, mas também pode ser executado localmente:
+
+```bash
+cd infra
+cp terraform.tfvars.example terraform.tfvars
+# editar terraform.tfvars — sobretudo db_password
+
+# Init aponta para o backend remoto (S3 + DynamoDB) usado pelo CI/CD.
+# Os valores de bucket/tabela vêm das GitHub Variables TF_STATE_BUCKET / TF_STATE_LOCK_TABLE.
+terraform init \
+  -backend-config="bucket=<TF_STATE_BUCKET>" \
+  -backend-config="key=oficina-mecanica/terraform.tfstate" \
+  -backend-config="region=us-east-1" \
+  -backend-config="dynamodb_table=<TF_STATE_LOCK_TABLE>" \
+  -backend-config="encrypt=true"
+
+terraform plan
+terraform apply
+```
+
+Principais outputs (`terraform output`):
+
+| Output | Uso |
+|---|---|
+| `kubeconfig_command` | Comando `aws eks update-kubeconfig` para configurar o `kubectl` |
+| `db_endpoint` / `db_connection_string` | Endpoint e `DATABASE_URL` do RDS |
+| `ecr_repository_url` / `ecr_login_command` | URL do ECR e login do Docker |
+| `db_secret_patch_command` | Comando para atualizar o `Secret` do Kubernetes com o endpoint real do RDS |
+| `apply_k8s_manifests` | Lembrete do comando `kubectl apply -f ../k8s/` |
+
+Após o `apply`, configure o `kubectl` e aplique os manifestos (sem o StatefulSet de Postgres, já que o banco agora é o RDS):
+
+```bash
+$(terraform output -raw kubeconfig_command)
+
+kubectl apply -f ../k8s/namespace.yaml
+kubectl apply -f ../k8s/configmap.yaml
+kubectl apply -f ../k8s/secret.yaml
+eval $(terraform output -raw db_secret_patch_command)   # aponta o Secret para o RDS real
+kubectl apply -f ../k8s/metrics-server.yaml
+kubectl apply -f ../k8s/app-deployment.yaml
+kubectl apply -f ../k8s/app-service.yaml
+kubectl apply -f ../k8s/app-hpa.yaml
+```
+
+Para desmontar toda a infraestrutura (⚠️ destrói VPC, EKS e RDS):
+
+```bash
+terraform destroy
+```
 
 ## Endpoints Obrigatórios — Fase 02
 
