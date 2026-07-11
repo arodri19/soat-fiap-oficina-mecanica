@@ -225,8 +225,30 @@ describe('OrderApplicationService — getOrderProgress / getOrderProgressByExter
 });
 
 describe('OrderApplicationService — createOrder / listOrders / getOrder', () => {
-  it('cria ordem com dados válidos', async () => {
-    await expect(service.createOrder({ description: 'Revisão', vehicleId: 1, clientPFId: 1 })).resolves.toEqual({ id: 100 });
+  it('cria ordem com dados válidos e retorna externalId', async () => {
+    const fullOrder = {
+      id: 100, externalId: 'test-uuid', status: 'RECEBIDA',
+      budgetValue: 0, services: [], vehicle: null, clientPF: null, clientPJ: null,
+    };
+    mockOrderRepo.getOrder.mockResolvedValueOnce(fullOrder);
+    const result = await service.createOrder({ description: 'Revisão', vehicleId: 1, clientPFId: 1 });
+    expect(result).toMatchObject({ id: 100, externalId: 'test-uuid', status: 'RECEBIDA' });
+  });
+
+  it('cria ordem com services e parts, calcula budget', async () => {
+    const fullOrder = {
+      id: 100, externalId: 'test-uuid', status: 'RECEBIDA',
+      budgetValue: 125, services: [{ id: 1 }], vehicle: null, clientPF: null, clientPJ: null,
+    };
+    mockOrderRepo.getOrder.mockResolvedValueOnce(fullOrder);
+    mockPartRepo.findPartById.mockResolvedValueOnce({ id: 2, name: 'Filtro', quantity: 5, price: 25 });
+    const result = await service.createOrder({
+      description: 'Revisão', vehicleId: 1, clientPFId: 1,
+      services: [{ serviceId: 1, parts: [{ partId: 2, quantity: 1 }] }],
+    });
+    expect(mockOrderRepo.addServiceToOrder).toHaveBeenCalledWith(100, 1);
+    expect(mockOrderRepo.calculateOrderBudget).toHaveBeenCalledWith(100);
+    expect(result.budgetValue).toBe(125);
   });
 
   it('lista ordens', async () => {
