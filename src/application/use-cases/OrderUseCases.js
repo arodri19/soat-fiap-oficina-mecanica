@@ -15,14 +15,56 @@ const STATUS_MESSAGES = {
 };
 
 class CreateOrderUseCase {
-  constructor(orderRepository) {
+  constructor(orderRepository, partRepository) {
     this.orderRepository = orderRepository;
+    this.partRepository  = partRepository;
   }
 
   async execute(data) {
-    const dto = new CreateOrderRequestDTO(data);
+    const dto   = new CreateOrderRequestDTO(data);
     const order = Order.create(dto);
-    return this.orderRepository.createOrder(order.toPlainObject());
+    const created = await this.orderRepository.createOrder(order.toPlainObject());
+
+    for (const svc of dto.services) {
+      let osService;
+      try {
+        osService = await this.orderRepository.addServiceToOrder(created.id, svc.serviceId);
+      } catch {
+        throw new ValidationError(`Serviço ${svc.serviceId} não encontrado`);
+      }
+
+      for (const { partId, quantity } of svc.parts) {
+        const part = await this.partRepository.findPartById(partId);
+        if (!part) throw new ValidationError(`Peça ${partId} não encontrada`);
+
+        let stock = part.quantity;
+        if (stock < quantity) {
+          const restock = Math.max(quantity, 1) + 1;
+          console.log(`[MOCK] Reposição da peça ${part.name} solicitada ao fornecedor.`);
+          stock = part.quantity + restock;
+          await this.partRepository.updatePartQuantity(part.id, stock);
+        }
+        await this.partRepository.updatePartQuantity(part.id, stock - quantity);
+        await this.orderRepository.addPartToOrder(osService.id, partId, quantity);
+      }
+    }
+
+    if (dto.services.length > 0) {
+      const budgetValue = await this.orderRepository.calculateOrderBudget(created.id);
+      await this.orderRepository.updateOrder(created.id, { budgetValue });
+    }
+
+    const full = await this.orderRepository.getOrder(created.id);
+    return {
+      id:         full.id,
+      externalId: full.externalId,
+      status:     full.status,
+      budgetValue: full.budgetValue,
+      services:   full.services,
+      vehicle:    full.vehicle,
+      clientPF:   full.clientPF,
+      clientPJ:   full.clientPJ,
+    };
   }
 }
 

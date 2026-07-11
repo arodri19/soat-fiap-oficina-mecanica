@@ -2,7 +2,7 @@ const { validateString, validateNumber, validateDate, validateOneOf, validateEnu
 const OrderStatus = require('../../domain/value-objects/OrderStatus');
 
 class CreateOrderRequestDTO {
-  constructor({ description, vehicleId, clientPFId, clientPJId, mechanicName, startAt, endAt }) {
+  constructor({ description, vehicleId, clientPFId, clientPJId, mechanicName, startAt, endAt, services }) {
     this.description = validateString(description, 'description', { required: true });
     this.vehicleId = validateNumber(vehicleId, 'vehicleId', { required: true, integer: true });
     validateOneOf({ clientPFId, clientPJId }, ['clientPFId', 'clientPJId']);
@@ -17,6 +17,22 @@ class CreateOrderRequestDTO {
     }
     this.startAt = validateDate(startAt, 'startAt');
     this.endAt = validateDate(endAt, 'endAt');
+
+    if (services !== undefined) {
+      if (!Array.isArray(services)) throw new Error('services deve ser um array');
+      this.services = services.map((s, i) => {
+        const serviceId = validateNumber(s.serviceId, `services[${i}].serviceId`, { required: true, integer: true });
+        const parts = Array.isArray(s.parts)
+          ? s.parts.map((p, j) => ({
+              partId:   validateNumber(p.partId,   `services[${i}].parts[${j}].partId`,   { required: true,  integer: true }),
+              quantity: validateNumber(p.quantity, `services[${i}].parts[${j}].quantity`, { required: false, integer: true, min: 1 }) ?? 1,
+            }))
+          : [];
+        return { serviceId, parts };
+      });
+    } else {
+      this.services = [];
+    }
   }
 }
 
