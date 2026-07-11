@@ -6,8 +6,8 @@
 # ║                                                              ║
 # ║  Ordem recomendada para a demo:                              ║
 # ║  0. Login → copie o token para @token abaixo                 ║
-# ║  1. POST   /api/orders      → Abertura de OS                 ║
-# ║  2. GET    /api/orders      → Listagem de OS                 ║
+# ║  1. POST   /api/orders      → Abertura de OS (+ serviços e peças)
+# ║  2. GET    /api/orders      → Listagem paginada de OS        ║
 # ║  3. PATCH  /api/orders/:id/status → Atualização de status    ║
 # ║  4. GET    /api/track/:externalId → Consulta pública (sem JWT)║
 # ║  5. POST   /api/track/:externalId/approve → Aprovação        ║
@@ -17,8 +17,10 @@
 @baseUrl   = http://localhost:4000/api
 
 # IDs reais do seed (válidos após npm run seed)
-@clienteId = 16
-@veiculoId = 28
+@clienteId  = 16
+@veiculoId  = 28
+@servicoId  = 19
+@pecaId     = 22
 
 # Cole aqui o token retornado pelo Login (passo 0)
 @token = COLE_O_TOKEN_AQUI
@@ -51,7 +53,9 @@ Content-Type: application/json
 # POST /api/orders
 # ══════════════════════════════════════════════════════════════════
 # Cria uma nova OS com status inicial RECEBIDA.
-# Resposta inclui `id` e `externalId` — cole-os nas variáveis acima.
+# Aceita cliente, veículo, serviços e peças em uma única requisição.
+# Resposta inclui `externalId` — identificador público da OS.
+# Cole o `id` em @orderId e o `externalId` em @externalId acima.
 # ──────────────────────────────────────────────────────────────────
 
 # @name criarOS
@@ -63,8 +67,32 @@ Authorization: Bearer {{token}}
   "description": "Revisão completa pré-viagem — verificação geral",
   "clientPFId": {{clienteId}},
   "vehicleId": {{veiculoId}},
-  "mechanicName": "Roberto Silva"
+  "mechanicName": "Roberto Silva",
+  "services": [
+    {
+      "serviceId": {{servicoId}},
+      "parts": [
+        {
+          "partId": {{pecaId}},
+          "quantity": 1
+        }
+      ]
+    }
+  ]
 }
+
+###
+
+# Variante mínima — sem serviços (compatível com versão anterior)
+# POST {{baseUrl}}/orders
+# Content-Type: application/json
+# Authorization: Bearer {{token}}
+#
+# {
+#   "description": "Diagnóstico rápido",
+#   "clientPFId": {{clienteId}},
+#   "vehicleId": {{veiculoId}}
+# }
 
 ###
 
@@ -74,10 +102,20 @@ Authorization: Bearer {{token}}
 # ENDPOINT 2 — Listagem de Ordens de Serviço
 # GET /api/orders
 # ══════════════════════════════════════════════════════════════════
-# Retorna todas as OS. Aceita filtro ?status=RECEBIDA
+# Retorna OS ativas ordenadas por prioridade de status:
+#   EM_EXECUCAO → AGUARDANDO_APROVACAO → EM_DIAGNOSTICO → RECEBIDA
+# FINALIZADA e ENTREGUE são excluídas automaticamente.
+# Suporta paginação (?page=1&limit=20) e filtro (?status=RECEBIDA).
 # ──────────────────────────────────────────────────────────────────
 
+# Listagem padrão (página 1, 20 por página)
 GET {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+
+###
+
+# Página 2 com 5 itens por página
+GET {{baseUrl}}/orders?page=1&limit=5
 Authorization: Bearer {{token}}
 
 ###
@@ -96,7 +134,7 @@ Authorization: Bearer {{token}}
 # ══════════════════════════════════════════════════════════════════
 # Avança o status respeitando a máquina de estados:
 #   RECEBIDA → EM_DIAGNOSTICO → AGUARDANDO_APROVACAO
-#   → EM_EXECUCAO → FINALIZADA
+#   → EM_EXECUCAO → FINALIZADA → ENTREGUE
 #
 # Cole o id da OS criada no passo 1 em @orderId
 # ──────────────────────────────────────────────────────────────────
@@ -112,7 +150,7 @@ Authorization: Bearer {{token}}
 
 ###
 
-# Passo 3b — EM_DIAGNOSTICO → AGUARDANDO_APROVACAO (gera orçamento para o cliente)
+# Passo 3b — EM_DIAGNOSTICO → AGUARDANDO_APROVACAO (envio do orçamento ao cliente)
 PATCH {{baseUrl}}/orders/{{orderId}}/status
 Content-Type: application/json
 Authorization: Bearer {{token}}
@@ -149,7 +187,7 @@ GET {{baseUrl}}/track/{{externalId}}
 #   approved: true  → AGUARDANDO_APROVACAO → EM_EXECUCAO
 #   approved: false → AGUARDANDO_APROVACAO → CANCELADA
 #
-# A OS precisa estar em status AGUARDANDO_APROVACAO para funcionar.
+# A OS precisa estar em AGUARDANDO_APROVACAO (executar passo 3b antes).
 # ──────────────────────────────────────────────────────────────────
 
 # Aprovar o orçamento → OS vai para EM_EXECUCAO

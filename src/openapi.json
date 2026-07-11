@@ -1662,20 +1662,108 @@
                   },
                   "mechanicName": {
                     "type": "string",
-                    "example": "José Santos"
+                    "example": "Roberto Silva"
+                  },
+                  "services": {
+                    "type": "array",
+                    "description": "Serviços e peças associados na abertura (opcional)",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "serviceId"
+                      ],
+                      "properties": {
+                        "serviceId": {
+                          "type": "integer",
+                          "example": 19
+                        },
+                        "parts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "partId"
+                            ],
+                            "properties": {
+                              "partId": {
+                                "type": "integer",
+                                "example": 22
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "example": 1,
+                                "default": 1
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
                   }
                 }
+              },
+              "example": {
+                "description": "Revisão completa pré-viagem — verificação geral",
+                "clientPFId": 16,
+                "vehicleId": 28,
+                "mechanicName": "Roberto Silva",
+                "services": [
+                  {
+                    "serviceId": 19,
+                    "parts": [
+                      {
+                        "partId": 22,
+                        "quantity": 1
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Ordem criada",
+            "description": "OS criada com sucesso",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderService"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "example": 42
+                    },
+                    "externalId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "550e8400-e29b-41d4-a716-446655440000",
+                      "description": "Identificador público da OS — use para rastrear via /track/:externalId"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "RECEBIDA"
+                    },
+                    "budgetValue": {
+                      "type": "number",
+                      "example": 125.0
+                    },
+                    "vehicle": {
+                      "$ref": "#/components/schemas/Vehicle"
+                    },
+                    "clientPF": {
+                      "$ref": "#/components/schemas/ClientPF"
+                    },
+                    "clientPJ": {
+                      "$ref": "#/components/schemas/ClientPJ"
+                    },
+                    "services": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -1690,7 +1778,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Cria uma nova OS com status **RECEBIDA**. Aceita serviços e peças opcionalmente em uma única requisição. Retorna o `externalId` — identificador público da OS usado para rastreamento pelo cliente sem autenticação."
       },
       "get": {
         "tags": [
@@ -1700,19 +1789,80 @@
         "summary": "Listagem de Ordens de Serviço",
         "responses": {
           "200": {
-            "description": "Lista de ordens",
+            "description": "Lista paginada de ordens",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/OrderService"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderService"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "example": 125
+                    },
+                    "page": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "example": 20
+                    },
+                    "pages": {
+                      "type": "integer",
+                      "example": 7
+                    }
                   }
                 }
               }
             }
           }
-        }
+        },
+        "description": "Retorna as OS ativas (FINALIZADA e ENTREGUE são excluídas), ordenadas por prioridade: **EM_EXECUCAO → AGUARDANDO_APROVACAO → EM_DIAGNOSTICO → RECEBIDA**, mais antigas primeiro. Suporta paginação e filtro por status.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "RECEBIDA",
+                "EM_DIAGNOSTICO",
+                "AGUARDANDO_APROVACAO",
+                "EM_EXECUCAO",
+                "CANCELADA"
+              ]
+            },
+            "description": "Filtrar por status (FINALIZADA e ENTREGUE são sempre excluídas)",
+            "example": "AGUARDANDO_APROVACAO"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Número da página"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "Itens por página (máx. recomendado: 100)"
+          }
+        ]
       }
     },
     "/orders/{id}": {
