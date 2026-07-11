@@ -34,7 +34,7 @@ variable "cluster_version" {
 variable "node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
 variable "node_desired_size" {

@@ -282,6 +282,11 @@ jobs:
             --from-literal=DATABASE_URL="$DB_URL" \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      - name: Instalar metrics-server (necessário para HPA)
+        run: |
+          kubectl apply -f k8s/metrics-server.yaml
+          kubectl rollout status deployment/metrics-server -n kube-system --timeout=120s
+
       - name: Aplicar Deployment, Service e HPA da aplicação
         run: |
           kubectl apply -f k8s/app-deployment.yaml
