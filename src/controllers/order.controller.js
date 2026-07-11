@@ -4,8 +4,12 @@ const container = require('../infrastructure/container/Container');
  * @swagger
  * /orders:
  *   post:
- *     summary: Criar nova ordem de serviço
- *     tags: [Ordens de Serviço]
+ *     summary: Abertura de Ordem de Serviço (OS)
+ *     tags: [⭐ Fase 02 — Requisitos Obrigatórios, Ordens de Serviço]
+ *     description: |
+ *       Cria uma nova OS com status **RECEBIDA**. Aceita serviços e peças opcionalmente
+ *       em uma única requisição. Retorna o `externalId` — identificador público da OS
+ *       usado para rastreamento pelo cliente sem autenticação.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -20,36 +24,89 @@ const container = require('../infrastructure/container/Container');
  *             properties:
  *               description:
  *                 type: string
- *                 example: "Troca de óleo e filtros"
+ *                 example: "Revisão completa — verificação geral pré-viagem"
  *               vehicleId:
  *                 type: integer
  *                 example: 1
  *               clientPFId:
  *                 type: integer
  *                 example: 1
+ *                 description: "Informe clientPFId OU clientPJId (obrigatório um dos dois)"
  *               clientPJId:
  *                 type: integer
- *                 example: 1
+ *                 example: null
  *               mechanicName:
  *                 type: string
- *                 example: "João Silva"
- *               startAt:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-01-15T10:00:00Z"
- *               endAt:
- *                 type: string
- *                 format: date-time
- *                 example: "2024-01-15T12:00:00Z"
+ *                 example: "Roberto Silva"
+ *               services:
+ *                 type: array
+ *                 description: "Serviços e peças já associados na abertura (opcional)"
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - serviceId
+ *                   properties:
+ *                     serviceId:
+ *                       type: integer
+ *                       example: 1
+ *                     parts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         required:
+ *                           - partId
+ *                         properties:
+ *                           partId:
+ *                             type: integer
+ *                             example: 2
+ *                           quantity:
+ *                             type: integer
+ *                             example: 1
+ *                             default: 1
+ *           example:
+ *             description: "Revisão completa — verificação geral pré-viagem"
+ *             clientPFId: 1
+ *             vehicleId: 1
+ *             mechanicName: "Roberto Silva"
+ *             services:
+ *               - serviceId: 1
+ *                 parts:
+ *                   - partId: 2
+ *                     quantity: 1
  *     responses:
  *       201:
- *         description: Ordem criada com sucesso
+ *         description: OS criada com sucesso
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/OrderService'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 42
+ *                 externalId:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "550e8400-e29b-41d4-a716-446655440000"
+ *                   description: "Identificador público da OS — use para rastrear via /track/:externalId"
+ *                 status:
+ *                   type: string
+ *                   example: "RECEBIDA"
+ *                 budgetValue:
+ *                   type: number
+ *                   example: 150.00
+ *                 vehicle:
+ *                   $ref: '#/components/schemas/Vehicle'
+ *                 clientPF:
+ *                   $ref: '#/components/schemas/ClientPF'
+ *                 clientPJ:
+ *                   $ref: '#/components/schemas/ClientPJ'
+ *                 services:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/OrderServiceService'
  *       400:
- *         description: Dados inválidos
+ *         description: Dados inválidos (campo obrigatório ausente, serviceId ou partId inexistente)
  */
 async function createOrder(req, res) {
   const { description, vehicleId, clientPFId, clientPJId } = req.body;
@@ -68,19 +125,58 @@ async function createOrder(req, res) {
  * @swagger
  * /orders:
  *   get:
- *     summary: Listar todas as ordens de serviço
- *     tags: [Ordens de Serviço]
+ *     summary: Listagem de Ordens de Serviço
+ *     tags: [⭐ Fase 02 — Requisitos Obrigatórios, Ordens de Serviço]
+ *     description: |
+ *       Retorna as OS ativas (FINALIZADA e ENTREGUE são excluídas), ordenadas por prioridade:
+ *       **EM_EXECUCAO → AGUARDANDO_APROVACAO → EM_DIAGNOSTICO → RECEBIDA**, mais antigas primeiro.
+ *       Suporta paginação e filtro por status.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [RECEBIDA, EM_DIAGNOSTICO, AGUARDANDO_APROVACAO, EM_EXECUCAO, CANCELADA]
+ *         description: "Filtrar por status (FINALIZADA e ENTREGUE são sempre excluídas)"
+ *         example: "AGUARDANDO_APROVACAO"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: "Número da página"
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: "Itens por página (máx. recomendado: 100)"
  *     responses:
  *       200:
- *         description: Lista de ordens retornada com sucesso
+ *         description: Lista paginada de ordens
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/OrderService'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/OrderService'
+ *                 total:
+ *                   type: integer
+ *                   example: 125
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 limit:
+ *                   type: integer
+ *                   example: 20
+ *                 pages:
+ *                   type: integer
+ *                   example: 7
  */
 async function listOrders(req, res) {
   const { status, page, limit } = req.query;
