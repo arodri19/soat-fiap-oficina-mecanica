@@ -155,7 +155,7 @@ Imagem da aplicação: Docker Hub — arodri19/oficina-mecanica-app (público)
 O pipeline roda em dois workflows do GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml) e [`.github/workflows/cd.yml`](.github/workflows/cd.yml), espelhados em [`ci-cd/`](ci-cd/) para referência):
 
 ```
-push/dispatch (branch main)
+workflow_dispatch manual — CI (branch main)
         │
         ▼
 ┌──────────────────────────────────────────────┐
@@ -163,12 +163,14 @@ push/dispatch (branch main)
 │  1. npm ci + jest --coverage                    │
 │  2. docker build (multi-stage)                  │
 │  3. docker push → Docker Hub (tag <sha7> e latest) │
-└──────────────────┬───────────────────────────────┘
-                    │ workflow_run: success
-                    ▼
+└──────────────────────────────────────────────────┘
+
+workflow_dispatch manual — CD (independente do CI)
+        │
+        ▼
 ┌────────────────────────────────────────────────┐
 │ CD — cd.yml                                       │
-│  1. guard          → confirma que o CI passou     │
+│  1. guard          → confirma disparo manual       │
 │  2. bootstrap       → cria bucket S3 + tabela      │
 │                        DynamoDB do state (se preciso) │
 │  3. provision-infra → terraform init/plan/apply    │
@@ -183,7 +185,8 @@ push/dispatch (branch main)
 └────────────────────────────────────────────────────┘
 ```
 
-- O CD dispara automaticamente após o CI concluir com sucesso na `main`, ou manualmente via `workflow_dispatch` (útil para hotfix/rollback, informando `image_tag`).
+- Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD. Isso evita provisionar/destruir infraestrutura AWS sem intenção explícita.
+- No CD, informe `image_tag` (SHA curto publicado pelo CI, ou `latest`) e `environment` (`dev`/`staging`/`prod`) ao disparar.
 - O apply do Terraform só executa quando `terraform plan -detailed-exitcode` indica mudanças pendentes (exitcode `2`), evitando applies desnecessários.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
 
@@ -244,15 +247,10 @@ Os manifestos ficam em [`k8s/`](k8s/). Há dois cenários de uso:
 
 #### A) Cluster local (minikube/kind) — com PostgreSQL em StatefulSet
 
-Sem depender do RDS, útil para testar os manifestos localmente.
+Sem depender do RDS nem de credenciais AWS — os manifestos já apontam para a imagem pública `arodri19/oficina-mecanica-app:latest` no Docker Hub, então o `kubectl apply` puxa a imagem diretamente, sem build local.
 
 ```bash
 minikube start
-
-# Build local da imagem e disponibilização para o cluster
-docker build -t oficina-app:local --target production .
-minikube image load oficina-app:local
-# ajuste "image:" no k8s/app-deployment.yaml para "oficina-app:local" antes de aplicar
 
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/configmap.yaml
@@ -260,19 +258,25 @@ kubectl apply -f k8s/secret.yaml            # valores de exemplo — trocar em p
 kubectl apply -f k8s/postgres-statefulset.yaml
 kubectl apply -f k8s/postgres-service.yaml
 kubectl apply -f k8s/metrics-server.yaml    # necessário para o HPA
-kubectl apply -f k8s/app-deployment.yaml
+kubectl apply -f k8s/app-deployment.yaml    # puxa arodri19/oficina-mecanica-app:latest do Docker Hub
 kubectl apply -f k8s/app-service.yaml
 kubectl apply -f k8s/app-hpa.yaml
-
-# expõe o Service type=LoadBalancer localmente
-minikube tunnel
 ```
+
+> Para testar uma imagem construída localmente em vez da publicada no Docker Hub: `docker build -t oficina-app:local --target production .`, depois `minikube image load oficina-app:local` e ajuste `image:` em `k8s/app-deployment.yaml`.
 
 Acompanhar o rollout e o autoscaling:
 
 ```bash
 kubectl get pods -n oficina-mecanica -w
 kubectl get hpa -n oficina-mecanica
+```
+
+Acessar a aplicação (o Service é `type: LoadBalancer`; em minikube, obtenha a URL local com):
+
+```bash
+minikube service oficina-app-service -n oficina-mecanica --url
+# ex.: http://192.168.59.100:31197 — teste com curl $URL/api-docs/ ou os arquivos requests/*.http
 ```
 
 #### B) Produção (EKS) — via pipeline de CD
@@ -284,7 +288,7 @@ Em produção, o cluster e o RDS já existem (provisionados pelo Terraform — v
 3. Instala o `metrics-server` (pré-requisito do HPA)
 4. Aplica `app-deployment`, `app-service` e `app-hpa`, aguarda o rollout e roda o seed
 
-Para disparar manualmente (hotfix/rollback), use `workflow_dispatch` no `cd.yml` informando a `image_tag` (SHA curto ou `latest`) e o `environment`.
+O disparo é sempre manual: aba **Actions → CD → Run workflow**, informando `image_tag` (SHA curto ou `latest`) e `environment`.
 
 ### Provisionamento de Infraestrutura com Terraform
 
