@@ -8,10 +8,10 @@ Sistema de gestão para oficinas mecânicas: controla clientes, veículos, orden
 
 A **Fase 01** entregou a API funcional — Clean Architecture, regras de domínio, testes automatizados e containerização com Docker Compose. A **Fase 02** evolui o projeto para rodar em produção na nuvem, adicionando:
 
-- **Infraestrutura como Código (Terraform):** provisiona VPC, cluster Kubernetes gerenciado (EKS), banco gerenciado (RDS PostgreSQL) e registro de imagens (ECR) na AWS
+- **Infraestrutura como Código (Terraform):** provisiona VPC, cluster Kubernetes gerenciado (EKS) e banco gerenciado (RDS PostgreSQL) na AWS
 - **Deploy em Kubernetes:** manifestos declarativos para a aplicação (Deployment, Service, HPA) e, para uso local sem RDS, um StatefulSet de PostgreSQL
 - **Autoscaling horizontal (HPA)** baseado em utilização de CPU e memória
-- **Pipeline de CI/CD (GitHub Actions):** testes → build e push de imagem no ECR → provisionamento de infraestrutura → deploy no cluster
+- **Pipeline de CI/CD (GitHub Actions):** testes → build e push de imagem no Docker Hub (repositório público) → provisionamento de infraestrutura → deploy no cluster
 
 ## Funcionalidades
 
@@ -37,7 +37,7 @@ A **Fase 01** entregou a API funcional — Clean Architecture, regras de domíni
 | Banco de dados | PostgreSQL 16 |
 | Autenticação | JWT + bcrypt |
 | Testes | Jest + Supertest |
-| Infraestrutura | Docker Compose (dev), Terraform, AWS (EKS, RDS, ECR, VPC), Kubernetes |
+| Infraestrutura | Docker Compose (dev), Terraform, AWS (EKS, RDS, VPC), Kubernetes, Docker Hub |
 | CI/CD | GitHub Actions |
 | Documentação | Swagger UI |
 
@@ -114,7 +114,7 @@ Para mais detalhes, consulte o [ADR 0001](docs/adr/0001-uso-de-postgresql-como-b
 
 ### Infraestrutura Provisionada
 
-Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), organizado em três módulos reutilizáveis ([`vpc`](infra/modules/vpc/), [`eks`](infra/modules/eks/), [`rds`](infra/modules/rds/)) mais o repositório ECR declarado em [`infra/main.tf`](infra/main.tf):
+Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), organizado em três módulos reutilizáveis ([`vpc`](infra/modules/vpc/), [`eks`](infra/modules/eks/), [`rds`](infra/modules/rds/)). A imagem Docker da aplicação fica no Docker Hub (público), fora do escopo da AWS:
 
 ```
                           AWS
@@ -130,17 +130,17 @@ Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), 
 │  │ Subnet privada (AZ-a)     │        │ Subnet privada (AZ-b)     │          │
 │  │                           │        │                           │          │
 │  │  EKS Node Group (EC2)     │        │  EKS Node Group (EC2)     │          │
-│  │   └─ Pods: oficina-app    │        │   └─ Pods: oficina-app    │          │
+│  │   └─ Pods: oficina-app ◄──┼────────┼── docker pull (Docker Hub)│          │
 │  │                           │        │                           │          │
 │  │  RDS PostgreSQL 16 ◄──────┼────────┼── acessível só pelos      │          │
 │  │  (subnet privada)         │        │   Security Groups do EKS  │          │
 │  └───────────────────────────┘        └───────────────────────────┘          │
 │                                                                            │
 │  EKS Control Plane (gerenciado pela AWS, fora das subnets do cliente)     │
-│  ECR — oficina-mecanica-app-fiap-andre-rq-20260707                        │
 └──────────────────────────────────────────────────────────────────────────┘
 
 Estado do Terraform: S3 (versionado + criptografado) + lock via DynamoDB
+Imagem da aplicação: Docker Hub — arodri19/oficina-mecanica-app (público)
 ```
 
 | Recurso | Módulo | Detalhes |
@@ -148,7 +148,7 @@ Estado do Terraform: S3 (versionado + criptografado) + lock via DynamoDB
 | VPC, subnets, IGW, NAT GW | [`modules/vpc`](infra/modules/vpc/) | 2 subnets públicas + 2 privadas, uma em cada AZ |
 | Cluster EKS + Node Group | [`modules/eks`](infra/modules/eks/) | IAM roles, Security Groups, node group em subnets privadas |
 | RDS PostgreSQL 16 | [`modules/rds`](infra/modules/rds/) | Subnet privada, acesso restrito aos SGs do EKS |
-| Repositório ECR | [`main.tf`](infra/main.tf) | Scan de vulnerabilidades no push, lifecycle policy (mantém 10 imagens) |
+| Repositório Docker Hub | [`docker.io/arodri19/oficina-mecanica-app`](https://hub.docker.com/r/arodri19/oficina-mecanica-app) | Público — pull sem autenticação, tags `<sha7>` e `latest` |
 
 ### Fluxo de Deploy (CI/CD)
 
@@ -158,12 +158,12 @@ O pipeline roda em dois workflows do GitHub Actions ([`.github/workflows/ci.yml`
 push/dispatch (branch main)
         │
         ▼
-┌────────────────────────────────────┐
-│ CI — ci.yml                          │
-│  1. npm ci + jest --coverage         │
-│  2. docker build (multi-stage)       │
-│  3. docker push → ECR (tag <sha7> e latest) │
-└──────────────────┬───────────────────┘
+┌──────────────────────────────────────────────┐
+│ CI — ci.yml                                     │
+│  1. npm ci + jest --coverage                    │
+│  2. docker build (multi-stage)                  │
+│  3. docker push → Docker Hub (tag <sha7> e latest) │
+└──────────────────┬───────────────────────────────┘
                     │ workflow_run: success
                     ▼
 ┌────────────────────────────────────────────────┐
@@ -172,7 +172,7 @@ push/dispatch (branch main)
 │  2. bootstrap       → cria bucket S3 + tabela      │
 │                        DynamoDB do state (se preciso) │
 │  3. provision-infra → terraform init/plan/apply    │
-│                        (VPC, EKS, RDS, ECR)         │
+│                        (VPC, EKS, RDS)              │
 │  4. deploy-k8s      → aws eks update-kubeconfig     │
 │                        kubectl apply (namespace,    │
 │                        configmap, secret c/ RDS,    │
@@ -314,7 +314,6 @@ Principais outputs (`terraform output`):
 |---|---|
 | `kubeconfig_command` | Comando `aws eks update-kubeconfig` para configurar o `kubectl` |
 | `db_endpoint` / `db_connection_string` | Endpoint e `DATABASE_URL` do RDS |
-| `ecr_repository_url` / `ecr_login_command` | URL do ECR e login do Docker |
 | `db_secret_patch_command` | Comando para atualizar o `Secret` do Kubernetes com o endpoint real do RDS |
 | `apply_k8s_manifests` | Lembrete do comando `kubectl apply -f ../k8s/` |
 

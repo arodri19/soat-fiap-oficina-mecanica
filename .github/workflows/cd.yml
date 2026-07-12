@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'Tag da imagem ECR (ex: abc1234 ou latest)'
+        description: 'Tag da imagem Docker Hub (ex: abc1234 ou latest)'
         required: false
         default: 'latest'
       environment:
@@ -28,11 +28,11 @@ on:
 # Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME,
 #                                   TF_STATE_BUCKET, TF_STATE_LOCK_TABLE
 env:
-  AWS_REGION:       ${{ vars.AWS_REGION || 'us-east-1' }}
-  EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME || 'oficina-mecanica-dev' }}
-  ECR_REPOSITORY:   oficina-mecanica-app-fiap-andre-rq-20260707
-  TF_VERSION:       '1.5.7'
-  NAMESPACE:        'oficina-mecanica'
+  AWS_REGION:            ${{ vars.AWS_REGION || 'us-east-1' }}
+  EKS_CLUSTER_NAME:      ${{ vars.EKS_CLUSTER_NAME || 'oficina-mecanica-dev' }}
+  DOCKERHUB_REPOSITORY:  arodri19/oficina-mecanica-app
+  TF_VERSION:            '1.5.7'
+  NAMESPACE:             'oficina-mecanica'
 
 jobs:
   # ── Guard ────────────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ jobs:
           fi
 
   # ── Job 2: Provisionamento de Infraestrutura (Terraform) ──────────────────
-  # Cria ou atualiza: VPC, EKS, RDS PostgreSQL e ECR.
+  # Cria ou atualiza: VPC, EKS e RDS PostgreSQL.
   # O plan com -detailed-exitcode retorna:
   #   0 = sem mudanças, 1 = erro, 2 = mudanças pendentes
   # O apply só é executado quando exitcode == 2 (evita apply desnecessário).
@@ -115,7 +115,6 @@ jobs:
     outputs:
       cluster-name: ${{ steps.tf-outputs.outputs.cluster-name }}
       rds-endpoint: ${{ steps.tf-outputs.outputs.rds-endpoint }}
-      ecr-repo-url: ${{ steps.tf-outputs.outputs.ecr-repo-url }}
 
     steps:
       - name: Checkout do código
@@ -147,19 +146,6 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Importar ECR no state se já existir
-        run: |
-          ECR_NAME="${{ env.ECR_REPOSITORY }}"
-          if aws ecr describe-repositories --repository-names "$ECR_NAME" \
-               --region "${{ env.AWS_REGION }}" 2>/dev/null; then
-            terraform state list | grep -q "aws_ecr_repository.app" || \
-              terraform import aws_ecr_repository.app "$ECR_NAME"
-            echo "ECR $ECR_NAME sincronizado no state."
-          fi
-        env:
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
-        working-directory: infra
-
       - name: Terraform Plan
         id: plan
         run: |
@@ -182,9 +168,8 @@ jobs:
       - name: Coletar outputs do Terraform
         id: tf-outputs
         run: |
-          echo "cluster-name=$(terraform output -raw cluster_name)"      >> $GITHUB_OUTPUT
-          echo "rds-endpoint=$(terraform output -raw db_endpoint)"        >> $GITHUB_OUTPUT
-          echo "ecr-repo-url=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "cluster-name=$(terraform output -raw cluster_name)" >> $GITHUB_OUTPUT
+          echo "rds-endpoint=$(terraform output -raw db_endpoint)"   >> $GITHUB_OUTPUT
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
@@ -198,11 +183,10 @@ jobs:
           echo "| Mudanças | $CHANGES |" >> $GITHUB_STEP_SUMMARY
           echo "| Cluster | \`${{ steps.tf-outputs.outputs.cluster-name }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| RDS | \`${{ steps.tf-outputs.outputs.rds-endpoint }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| ECR | \`${{ steps.tf-outputs.outputs.ecr-repo-url }}\` |" >> $GITHUB_STEP_SUMMARY
 
   # ── Job 2: Deploy no Kubernetes (EKS) ─────────────────────────────────────
   # 1. Configura kubectl via aws eks update-kubeconfig
-  # 2. Resolve a tag da imagem ECR (SHA do commit que disparou o CI)
+  # 2. Resolve a tag da imagem no Docker Hub (SHA do commit que disparou o CI)
   # 3. Substitui o placeholder no app-deployment.yaml
   # 4. Cria/atualiza o Secret K8s com credenciais reais (RDS endpoint)
   # 5. Aplica todos os manifestos por categoria (ordem importa)
@@ -224,15 +208,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-      - name: Login no Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Resolver URI da imagem ECR
+      - name: Resolver URI da imagem no Docker Hub
         id: image
         run: |
-          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
-
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             TAG="${{ github.event.inputs.image_tag }}"
           elif [ "${{ github.event_name }}" = "workflow_run" ]; then
@@ -242,8 +220,8 @@ jobs:
             TAG="latest"
           fi
 
-          echo "tag=$TAG"                                  >> $GITHUB_OUTPUT
-          echo "uri=$REGISTRY/${{ env.ECR_REPOSITORY }}:$TAG" >> $GITHUB_OUTPUT
+          echo "tag=$TAG"                                        >> $GITHUB_OUTPUT
+          echo "uri=${{ env.DOCKERHUB_REPOSITORY }}:$TAG"         >> $GITHUB_OUTPUT
 
       - name: Configurar kubectl (EKS)
         run: |
@@ -256,10 +234,9 @@ jobs:
       - name: Atualizar tag da imagem no Deployment YAML
         run: |
           IMAGE="${{ steps.image.outputs.uri }}"
-          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
           # Substitui qualquer tag anterior pela nova (SHA ou latest)
           sed -i \
-            "s|${REGISTRY}/${{ env.ECR_REPOSITORY }}:[^ ]*|${IMAGE}|g" \
+            "s|${{ env.DOCKERHUB_REPOSITORY }}:[^ ]*|${IMAGE}|g" \
             k8s/app-deployment.yaml
           echo "Imagem configurada: $IMAGE"
 
@@ -334,7 +311,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Imagem ECR | \`${{ steps.image.outputs.uri }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Imagem Docker Hub | \`${{ steps.image.outputs.uri }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Tag | \`${{ steps.image.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Cluster EKS | \`${{ env.EKS_CLUSTER_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| RDS Endpoint | \`${{ needs.provision-infra.outputs.rds-endpoint }}\` |" >> $GITHUB_STEP_SUMMARY

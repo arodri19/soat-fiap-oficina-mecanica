@@ -26,40 +26,6 @@ module "eks" {
   node_max_size      = var.node_max_size
 }
 
-# ── ECR Repository ────────────────────────────────────────────────────────────
-# Registro privado de imagens Docker da aplicação.
-# scan_on_push detecta CVEs automaticamente no push.
-# lifecycle_policy mantém apenas as 10 imagens mais recentes (controle de custo).
-resource "aws_ecr_repository" "app" {
-  name                 = "oficina-mecanica-app-fiap-andre-rq-20260707"
-  image_tag_mutability = "MUTABLE"
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  tags = {
-    Name = "oficina-mecanica-app-fiap-andre-rq-20260707"
-  }
-}
-
-resource "aws_ecr_lifecycle_policy" "app" {
-  repository = aws_ecr_repository.app.name
-
-  policy = jsonencode({
-    rules = [{
-      rulePriority = 1
-      description  = "Manter as 10 imagens mais recentes"
-      selection = {
-        tagStatus   = "any"
-        countType   = "imageCountMoreThan"
-        countNumber = 10
-      }
-      action = { type = "expire" }
-    }]
-  })
-}
-
 # ── Módulo RDS ────────────────────────────────────────────────────────────────
 # Cria o PostgreSQL 16 gerenciado (RDS) em subnets privadas,
 # acessível apenas pelos worker nodes do EKS.
