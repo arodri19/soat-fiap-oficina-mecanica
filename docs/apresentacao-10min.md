@@ -85,8 +85,10 @@ AWS
 ├── NAT Gateway       — pods EKS acessam internet sem exposição
 ├── EKS               — cluster Kubernetes gerenciado
 │   └── Node Group    — t3.micro (custo mínimo para demonstração)
-├── RDS PostgreSQL    — banco gerenciado em subnet privada (16.9)
-└── ECR               — registry privado de imagens Docker
+└── RDS PostgreSQL    — banco gerenciado em subnet privada (16.9)
+
+Docker Hub (fora da AWS)
+└── arodri19/oficina-mecanica-app — registry público de imagens Docker
 ```
 
 **Boas práticas aplicadas:**
@@ -106,14 +108,14 @@ AWS
 1. npm ci
 2. Jest com cobertura de testes
 3. Docker build (multi-stage, Alpine)
-4. Push para ECR com tag SHA + latest
+4. Push para Docker Hub (público) com tag SHA + latest
 ```
 
 ### CD — `cd.yml` (dispara após CI com sucesso)
 ```
 1. Guard        — bloqueia se CI falhou
 2. Bootstrap    — cria S3 + DynamoDB (idempotente, sem pré-requisitos manuais)
-3. Terraform    — importa ECR se já existe, plan + apply apenas se há mudanças
+3. Terraform    — plan + apply apenas se há mudanças (VPC, EKS, RDS)
 4. Deploy EKS   — kubectl apply, aguarda rollout (300s timeout)
 5. Seed         — executa prisma/seed.js dentro do pod após deploy
 ```
@@ -185,7 +187,7 @@ http://<LOAD_BALANCER>/api-docs
 ✅ Documentação interativa Swagger UI
 
 **Stack:**
-`Node.js` · `Express` · `Prisma` · `PostgreSQL` · `Docker` · `Kubernetes (EKS)` · `Terraform` · `GitHub Actions` · `AWS (ECR, RDS, VPC)`
+`Node.js` · `Express` · `Prisma` · `PostgreSQL` · `Docker` · `Docker Hub` · `Kubernetes (EKS)` · `Terraform` · `GitHub Actions` · `AWS (EKS, RDS, VPC)`
 
 ---
 

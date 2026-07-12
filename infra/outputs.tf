@@ -50,18 +50,6 @@ output "db_connection_string" {
   sensitive   = true
 }
 
-# ── ECR ───────────────────────────────────────────────────────────────────────
-
-output "ecr_repository_url" {
-  description = "URL do repositório ECR — usar como prefixo nas tags das imagens"
-  value       = aws_ecr_repository.app.repository_url
-}
-
-output "ecr_login_command" {
-  description = "Comando para autenticar o Docker no ECR"
-  value       = "aws ecr get-login-password --region ${var.aws_region} | docker login --username AWS --password-stdin ${aws_ecr_repository.app.repository_url}"
-}
-
 output "db_secret_patch_command" {
   description = "Comando para atualizar o Secret do Kubernetes com o endpoint RDS real"
   value       = "kubectl patch secret oficina-secrets -n oficina-mecanica -p '{\"stringData\":{\"DATABASE_URL\":\"postgresql://${var.db_username}:<SENHA>@${module.rds.db_endpoint}/${var.db_name}?schema=public\"}}'"
