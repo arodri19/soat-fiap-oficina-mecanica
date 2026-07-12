@@ -2,13 +2,7 @@ name: CD — Infraestrutura (Terraform) e Deploy Kubernetes
 
 # ── Triggers ──────────────────────────────────────────────────────────────────
 on:
-  # Dispara automaticamente quando o CI conclui com sucesso na main
-  workflow_run:
-    workflows: ['CI — Build, Testes e Imagem Docker']
-    branches: [main]
-    types: [completed]
-
-  # Permite acionar manualmente para hotfix ou rollback
+  # Disparo 100% manual — nenhum push/PR/conclusão de outro workflow aciona o CD.
   workflow_dispatch:
     inputs:
       image_tag:
@@ -36,18 +30,13 @@ env:
 
 jobs:
   # ── Guard ────────────────────────────────────────────────────────────────────
-  # Bloqueia o deploy se o CI falhou.
-  # Permite passagem em workflow_dispatch (deploy manual sempre autorizado).
+  # Disparo é sempre manual (workflow_dispatch) — deploy manual sempre autorizado.
   guard:
-    name: Verificar resultado do CI
+    name: Confirmar disparo manual
     runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success')
     steps:
-      - name: CI aprovado
-        run: echo "✅ CI concluiu com sucesso. Iniciando pipeline de CD."
+      - name: Deploy autorizado
+        run: echo "✅ Disparado manualmente. Iniciando pipeline de CD."
 
   # ── Job 1: Bootstrap do Backend Terraform ────────────────────────────────
   # Cria S3 bucket e tabela DynamoDB se ainda não existirem.
@@ -186,7 +175,7 @@ jobs:
 
   # ── Job 2: Deploy no Kubernetes (EKS) ─────────────────────────────────────
   # 1. Configura kubectl via aws eks update-kubeconfig
-  # 2. Resolve a tag da imagem no Docker Hub (SHA do commit que disparou o CI)
+  # 2. Resolve a tag da imagem no Docker Hub (input "image_tag" do workflow_dispatch)
   # 3. Substitui o placeholder no app-deployment.yaml
   # 4. Cria/atualiza o Secret K8s com credenciais reais (RDS endpoint)
   # 5. Aplica todos os manifestos por categoria (ordem importa)
@@ -211,17 +200,10 @@ jobs:
       - name: Resolver URI da imagem no Docker Hub
         id: image
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ github.event.inputs.image_tag }}"
-          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
-            TAG=$(echo "${{ github.event.workflow_run.head_sha }}" | cut -c1-7)
-          else
-            # push direto — usa latest (sempre publicada pelo CI)
-            TAG="latest"
-          fi
+          TAG="${{ github.event.inputs.image_tag }}"
 
-          echo "tag=$TAG"                                        >> $GITHUB_OUTPUT
-          echo "uri=${{ env.DOCKERHUB_REPOSITORY }}:$TAG"         >> $GITHUB_OUTPUT
+          echo "tag=$TAG"                                >> $GITHUB_OUTPUT
+          echo "uri=${{ env.DOCKERHUB_REPOSITORY }}:$TAG" >> $GITHUB_OUTPUT
 
       - name: Configurar kubectl (EKS)
         run: |
