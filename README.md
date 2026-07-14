@@ -502,6 +502,7 @@ A pasta `requests/` contém arquivos prontos para a extensão **REST Client** do
 ## Observações
 
 - O header `Authorization: Bearer <token>` é obrigatório em todas as rotas exceto `/api/auth/*` e `/api/track/*`.
-- Notificações de aprovação, reposição de estoque, e-mail e pagamento são **mockadas** (`console.log`).
+- Notificações de aprovação, reposição de estoque e pagamento são **mockadas** (`console.log`).
+- Toda transição de status da OS (`PATCH /api/orders/:id/status` e a aprovação em `/api/track/:externalId/approve`) dispara um **mock de e-mail** ao cliente (`src/infrastructure/notifications/emailNotificationService.js`), logado no console — substituível por um provedor real (Nodemailer, SendGrid etc.) sem alterar os casos de uso.
 - Um orçamento pode consolidar múltiplas ordens de serviço.
 - O `externalId` de cada ordem é um UUID gerado automaticamente e compartilhado com o cliente para acompanhamento público.

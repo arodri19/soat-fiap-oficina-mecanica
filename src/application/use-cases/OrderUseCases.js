@@ -1,5 +1,6 @@
 const Order = require('../../domain/entities/Order');
 const { ValidationError } = require('../../utils/validation');
+const { sendOrderStatusEmail } = require('../../infrastructure/notifications/emailNotificationService');
 const {
   CreateOrderRequestDTO,
   UpdateOrderStatusRequestDTO,
@@ -108,6 +109,13 @@ class UpdateOrderStatusUseCase {
 
     const updated = await this.orderRepository.updateOrder(id, updateData);
 
+    sendOrderStatusEmail({
+      to: raw.clientPF?.email || raw.clientPJ?.email,
+      orderId: id,
+      externalId: raw.externalId,
+      status: order.status.toString()
+    });
+
     const message = STATUS_MESSAGES[status];
     return message ? { order: updated, message } : updated;
   }
@@ -186,7 +194,16 @@ class ApproveOrderUseCase {
 
     const updateData = { status: order.status.toString() };
     if (!raw.startAt && order.startAt) updateData.startAt = order.startAt;
-    return this.orderRepository.updateOrder(raw.id, updateData);
+    const updated = await this.orderRepository.updateOrder(raw.id, updateData);
+
+    sendOrderStatusEmail({
+      to: raw.clientPF?.email || raw.clientPJ?.email,
+      orderId: raw.id,
+      externalId: raw.externalId,
+      status: order.status.toString()
+    });
+
+    return updated;
   }
 }
 
