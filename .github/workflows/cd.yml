@@ -18,7 +18,7 @@ on:
 
 # ── Variáveis globais ──────────────────────────────────────────────────────────
 # Secrets (Settings → Secrets): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
-#                                DB_PASSWORD, JWT_SECRET
+#                                DB_PASSWORD, JWT_SECRET, NEW_RELIC_LICENSE_KEY
 # Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME, RDS_ENDPOINT
 #
 # O cluster EKS (repositório infra-kube) e o RDS (repositório infra-data) são
@@ -105,6 +105,7 @@ jobs:
             --from-literal=POSTGRES_PASSWORD="${{ secrets.DB_PASSWORD }}" \
             --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --from-literal=DATABASE_URL="$DB_URL" \
+            --from-literal=NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Instalar metrics-server (necessário para HPA)

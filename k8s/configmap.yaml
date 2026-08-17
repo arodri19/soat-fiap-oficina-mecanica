@@ -10,3 +10,5 @@ data:
   CORS_ORIGIN: "http://localhost:3000"
   POSTGRES_DB: "oficina"
   POSTGRES_USER: "postgres"
+  NEW_RELIC_APP_NAME: "oficina-mecanica-api"
+  LOG_LEVEL: "info"

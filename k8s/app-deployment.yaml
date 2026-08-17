@@ -71,18 +71,35 @@ spec:
                 secretKeyRef:
                   name: oficina-secrets
                   key: JWT_SECRET
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: NEW_RELIC_LICENSE_KEY
+            - name: NEW_RELIC_APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: NEW_RELIC_APP_NAME
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-config
+                  key: LOG_LEVEL
 
-          # readinessProbe: pod só recebe tráfego após a porta estar aberta
+          # readinessProbe: pod só recebe tráfego após /health responder 200
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 4000
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 6
 
-          # livenessProbe: reinicia o container se ele parar de responder
+          # livenessProbe: reinicia o container se /health parar de responder
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /health
               port: 4000
             initialDelaySeconds: 30
             periodSeconds: 10

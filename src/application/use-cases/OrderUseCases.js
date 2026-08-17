@@ -1,6 +1,7 @@
 const Order = require('../../domain/entities/Order');
 const { ValidationError } = require('../../utils/validation');
 const { sendOrderStatusEmail } = require('../../infrastructure/notifications/emailNotificationService');
+const { recordOrderCreated, recordOrderStatusChanged } = require('../../infrastructure/monitoring/newrelicEvents');
 const {
   CreateOrderRequestDTO,
   UpdateOrderStatusRequestDTO,
@@ -56,6 +57,14 @@ class CreateOrderUseCase {
     }
 
     const full = await this.orderRepository.getOrder(created.id);
+
+    recordOrderCreated({
+      orderId: full.id,
+      externalId: full.externalId,
+      servicesCount: dto.services.length,
+      budgetValue: full.budgetValue
+    });
+
     return {
       id:         full.id,
       externalId: full.externalId,
@@ -114,6 +123,16 @@ class UpdateOrderStatusUseCase {
       orderId: id,
       externalId: raw.externalId,
       status: order.status.toString()
+    });
+
+    recordOrderStatusChanged({
+      orderId: id,
+      externalId: raw.externalId,
+      fromStatus: raw.status,
+      toStatus: order.status.toString(),
+      secondsInPreviousStatus: raw.updatedAt
+        ? (Date.now() - new Date(raw.updatedAt).getTime()) / 1000
+        : null
     });
 
     const message = STATUS_MESSAGES[status];

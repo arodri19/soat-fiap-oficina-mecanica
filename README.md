@@ -298,56 +298,31 @@ Em produção, o cluster e o RDS já existem (provisionados pelo Terraform — v
 
 O disparo é sempre manual: aba **Actions → CD → Run workflow**, informando `image_tag` (SHA curto ou `latest`) e `environment`.
 
-### Provisionamento de Infraestrutura com Terraform
+### Provisionamento de Infraestrutura
 
-O provisionamento roda automaticamente no pipeline de CD, mas também pode ser executado localmente:
+Este repositório **não provisiona infraestrutura** (ver [Infraestrutura Provisionada](#infraestrutura-provisionada)). Para subir o cluster e o banco antes de fazer deploy aqui:
 
 ```bash
-cd infra
-cp terraform.tfvars.example terraform.tfvars
-# editar terraform.tfvars — sobretudo db_password
+# 1. VPC + EKS + API Gateway (Kong/Konga) + monitoramento K8s
+cd ../soat-fiap-oficina-mecanica-infra-kube && terraform apply
 
-# Init aponta para o backend remoto (S3 + DynamoDB) usado pelo CI/CD.
-# Os valores de bucket/tabela vêm das GitHub Variables TF_STATE_BUCKET / TF_STATE_LOCK_TABLE.
-terraform init \
-  -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="key=oficina-mecanica/terraform.tfstate" \
-  -backend-config="region=us-east-1" \
-  -backend-config="dynamodb_table=<TF_STATE_LOCK_TABLE>" \
-  -backend-config="encrypt=true"
-
-terraform plan
-terraform apply
+# 2. RDS PostgreSQL (lê rede/security groups do apply acima via terraform_remote_state)
+cd ../soat-fiap-oficina-mecanica-infra-data && terraform apply
 ```
 
-Principais outputs (`terraform output`):
-
-| Output | Uso |
-|---|---|
-| `kubeconfig_command` | Comando `aws eks update-kubeconfig` para configurar o `kubectl` |
-| `db_endpoint` / `db_connection_string` | Endpoint e `DATABASE_URL` do RDS |
-| `db_secret_patch_command` | Comando para atualizar o `Secret` do Kubernetes com o endpoint real do RDS |
-| `apply_k8s_manifests` | Lembrete do comando `kubectl apply -f ../k8s/` |
-
-Após o `apply`, configure o `kubectl` e aplique os manifestos (sem o StatefulSet de Postgres, já que o banco agora é o RDS):
+Depois, configure `kubectl` e aplique os manifestos deste repositório (sem o StatefulSet de Postgres, já que o banco agora é o RDS):
 
 ```bash
-$(terraform output -raw kubeconfig_command)
+$(terraform -chdir=../soat-fiap-oficina-mecanica-infra-kube output -raw kubeconfig_command)
 
-kubectl apply -f ../k8s/namespace.yaml
-kubectl apply -f ../k8s/configmap.yaml
-kubectl apply -f ../k8s/secret.yaml
-eval $(terraform output -raw db_secret_patch_command)   # aponta o Secret para o RDS real
-kubectl apply -f ../k8s/metrics-server.yaml
-kubectl apply -f ../k8s/app-deployment.yaml
-kubectl apply -f ../k8s/app-service.yaml
-kubectl apply -f ../k8s/app-hpa.yaml
-```
-
-Para desmontar toda a infraestrutura (⚠️ destrói VPC, EKS e RDS):
-
-```bash
-terraform destroy
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+eval $(terraform -chdir=../soat-fiap-oficina-mecanica-infra-data output -raw db_secret_patch_command)   # aponta o Secret para o RDS real
+kubectl apply -f k8s/metrics-server.yaml
+kubectl apply -f k8s/app-deployment.yaml
+kubectl apply -f k8s/app-service.yaml
+kubectl apply -f k8s/app-hpa.yaml
 ```
 
 ## Endpoints Obrigatórios — Fase 02
@@ -491,6 +466,18 @@ Swagger UI disponível em:
 ```
 http://localhost:4000/api-docs
 ```
+
+## Observabilidade
+
+Integração com **New Relic** (APM + infraestrutura), adicionada na Fase 3:
+
+- **APM**: agente `newrelic` (`newrelic.js`), carregado como primeiro `require` em `src/index.js`. Cobre latência das APIs, throughput, apdex e erros automaticamente. Fica desligado se `NEW_RELIC_LICENSE_KEY` não estiver definida (não trava a aplicação nem os testes — `agent_enabled` é `false` em `NODE_ENV=test`).
+- **Logs estruturados (JSON) com correlação**: `src/middlewares/requestLogger.js` (pino + pino-http) — cada linha de log carrega um `x-request-id` (correlaciona todas as linhas da mesma requisição, devolvido também no header de resposta) e os metadados de trace da New Relic (`trace.id`/`span.id`), habilitando "logs in context" sem precisar do forwarder oficial deles.
+- **Healthcheck**: `GET /health` (fora de `/api`, sem autenticação) — usado pelas `readinessProbe`/`livenessProbe` do Kubernetes (ver `k8s/app-deployment.yaml`).
+- **Eventos customizados** (`src/infrastructure/monitoring/newrelicEvents.js`), emitidos pelos use cases de ordem de serviço:
+  - `OrderCreated` — alimenta o painel de volume diário de OS.
+  - `OrderStatusChanged` (com `secondsInPreviousStatus`) — alimenta o painel de tempo médio de execução por status.
+- **Monitoramento de Kubernetes, alertas e dashboard**: providos pelo repositório [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) (`newrelic-k8s.tf`, `newrelic-alerts.tf`, `newrelic-dashboard.tf`) — CPU/memória do cluster, alerta por e-mail em falhas nas rotas `/orders`, e dashboard com volume de OS, tempo médio por status, erros e latência.
 
 ## Exemplos de Requisição (.http)
 
