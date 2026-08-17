@@ -198,6 +198,22 @@ workflow_dispatch manual — CD (independente do CI)
 - Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` e `RDS_ENDPOINT` são GitHub Variables preenchidas a partir dos outputs dos repositórios `infra-kube` e `infra-data` — o cluster e o banco já precisam existir antes de rodar este CD.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
 
+## Documentação da Arquitetura
+
+| Documento | Conteúdo |
+|---|---|
+| [Diagrama de Componentes](docs/architecture/diagrama-componentes.md) | Visão de nuvem, APIs, banco e monitoramento, cruzando os 4 repositórios |
+| [Diagramas de Sequência](docs/architecture/diagrama-sequencia.md) | Autenticação via CPF e abertura de Ordem de Serviço |
+| [Modelo de Dados (ER)](docs/database/modelo-er.md) | Diagrama ER e explicação de cada relacionamento |
+| [RFC 0001](docs/rfc/0001-escolha-da-nuvem.md) | Escolha do provedor de nuvem (AWS) |
+| [RFC 0002](docs/rfc/0002-escolha-do-banco-de-dados.md) | Escolha do banco de dados (PostgreSQL) |
+| [RFC 0003](docs/rfc/0003-estrategia-de-autenticacao.md) | Estratégia de autenticação (JWT interno + CPF via Lambda) |
+| [ADR 0001](docs/adr/0001-uso-de-postgresql-como-banco-de-dados.md) | Uso do PostgreSQL |
+| [ADR 0002](docs/adr/0002-separacao-em-repositorios-por-responsabilidade.md) | Separação em 4 repositórios |
+| [ADR 0003](docs/adr/0003-uso-de-hpa-para-escalabilidade-dinamica.md) | Uso de HPA para escalabilidade dinâmica |
+| [ADR 0004](docs/adr/0004-kong-como-api-gateway.md) | Kong como API Gateway (+ Konga como UI) |
+| [ADR 0005](docs/adr/0005-terraform-remote-state-entre-repositorios.md) | `terraform_remote_state` entre os repositórios de infraestrutura |
+
 ## Como usar
 
 ### Pré-requisitos
