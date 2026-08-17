@@ -114,7 +114,16 @@ Para mais detalhes, consulte o [ADR 0001](docs/adr/0001-uso-de-postgresql-como-b
 
 ### Infraestrutura Provisionada
 
-Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), organizado em três módulos reutilizáveis ([`vpc`](infra/modules/vpc/), [`eks`](infra/modules/eks/), [`rds`](infra/modules/rds/)). A imagem Docker da aplicação fica no Docker Hub (público), fora do escopo da AWS:
+Desde a Fase 3, o ambiente AWS é definido como código em **dois repositórios Terraform
+separados** deste (organização exigida pela Fase 3 — repositórios segregados por
+responsabilidade):
+
+- [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) — VPC, cluster EKS e a API Gateway (Kong + Konga)
+- [`soat-fiap-oficina-mecanica-infra-data`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-data) — RDS PostgreSQL 16 gerenciado
+
+Este repositório **não provisiona infraestrutura** — só contém a aplicação e os manifestos
+Kubernetes (`k8s/`) aplicados no cluster já existente. A imagem Docker da aplicação fica no
+Docker Hub (público), fora do escopo da AWS:
 
 ```
                           AWS
@@ -143,11 +152,12 @@ Estado do Terraform: S3 (versionado + criptografado) + lock via DynamoDB
 Imagem da aplicação: Docker Hub — arodri19/oficina-mecanica-app (público)
 ```
 
-| Recurso | Módulo | Detalhes |
+| Recurso | Repositório / Módulo | Detalhes |
 |---|---|---|
-| VPC, subnets, IGW, NAT GW | [`modules/vpc`](infra/modules/vpc/) | 2 subnets públicas + 2 privadas, uma em cada AZ |
-| Cluster EKS + Node Group | [`modules/eks`](infra/modules/eks/) | IAM roles, Security Groups, node group em subnets privadas |
-| RDS PostgreSQL 16 | [`modules/rds`](infra/modules/rds/) | Subnet privada, acesso restrito aos SGs do EKS |
+| VPC, subnets, IGW, NAT GW | `infra-kube` → `modules/vpc` | 2 subnets públicas + 2 privadas, uma em cada AZ |
+| Cluster EKS + Node Group | `infra-kube` → `modules/eks` | IAM roles, Security Groups, node group em subnets privadas |
+| API Gateway (Kong + Konga) | `infra-kube` → `kong.tf` / `konga.tf` | Kong com Postgres dedicado; Konga como UI, acessível via port-forward |
+| RDS PostgreSQL 16 | `infra-data` → `modules/rds` | Subnet privada (lida via `terraform_remote_state` do `infra-kube`), acesso restrito aos SGs do EKS |
 | Repositório Docker Hub | [`docker.io/arodri19/oficina-mecanica-app`](https://hub.docker.com/r/arodri19/oficina-mecanica-app) | Público — pull sem autenticação, tags `<sha7>` e `latest` |
 
 ### Fluxo de Deploy (CI/CD)
@@ -170,24 +180,22 @@ workflow_dispatch manual — CD (independente do CI)
         ▼
 ┌────────────────────────────────────────────────┐
 │ CD — cd.yml                                       │
-│  1. guard          → confirma disparo manual       │
-│  2. bootstrap       → cria bucket S3 + tabela      │
-│                        DynamoDB do state (se preciso) │
-│  3. provision-infra → terraform init/plan/apply    │
-│                        (VPC, EKS, RDS)              │
-│  4. deploy-k8s      → aws eks update-kubeconfig     │
-│                        kubectl apply (namespace,    │
-│                        configmap, secret c/ RDS,    │
-│                        metrics-server, deployment,  │
-│                        service, hpa)                │
-│                        kubectl rollout status        │
-│                        kubectl exec … prisma seed    │
+│  1. guard      → confirma disparo manual           │
+│  2. deploy-k8s → aws eks update-kubeconfig          │
+│                  (cluster já provisionado pelo      │
+│                   repositório infra-kube)           │
+│                  kubectl apply (namespace,          │
+│                  configmap, secret c/ RDS,          │
+│                  metrics-server, deployment,        │
+│                  service, hpa)                      │
+│                  kubectl rollout status              │
+│                  kubectl exec … prisma seed          │
 └────────────────────────────────────────────────────┘
 ```
 
-- Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD. Isso evita provisionar/destruir infraestrutura AWS sem intenção explícita.
+- Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD.
 - No CD, informe `image_tag` (SHA curto publicado pelo CI, ou `latest`) e `environment` (`dev`/`staging`/`prod`) ao disparar.
-- O apply do Terraform só executa quando `terraform plan -detailed-exitcode` indica mudanças pendentes (exitcode `2`), evitando applies desnecessários.
+- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` e `RDS_ENDPOINT` são GitHub Variables preenchidas a partir dos outputs dos repositórios `infra-kube` e `infra-data` — o cluster e o banco já precisam existir antes de rodar este CD.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
 
 ## Como usar
