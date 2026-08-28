@@ -171,7 +171,7 @@ describe('GET /api/orders/:id/progress', () => {
   });
 });
 
-describe('GET /api/track/:externalId (público)', () => {
+describe('GET /api/track/:externalId (protegido por JWT de cliente)', () => {
   it('retorna progresso sem token', async () => {
     svc.getOrderProgressByExternalId.mockResolvedValue({ status: 'AGUARDANDO_APROVACAO', mechanicDescription: 'Revisão', mechanicName: 'Ana' });
     const res = await request(app).get('/api/track/uuid-123');
@@ -186,7 +186,7 @@ describe('GET /api/track/:externalId (público)', () => {
   });
 });
 
-describe('POST /api/track/:externalId/approve (público)', () => {
+describe('POST /api/track/:externalId/approve (protegido por JWT de cliente)', () => {
   it('aprova ordem com 200', async () => {
     svc.approveOrder.mockResolvedValue({ id: 1, status: 'EM_EXECUCAO' });
     const res = await request(app).post('/api/track/uuid-123/approve');

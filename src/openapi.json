@@ -2337,8 +2337,12 @@
           "⭐ Fase 02 — Requisitos Obrigatórios",
           "Rastreamento"
         ],
-        "summary": "Consulta de status da OS (pública, sem JWT)",
-        "security": [],
+        "summary": "Consulta de status da OS (protegida por JWT de cliente, obtido via autenticação por CPF)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",
@@ -2381,8 +2385,12 @@
           "⭐ Fase 02 — Requisitos Obrigatórios",
           "Rastreamento"
         ],
-        "summary": "Aprovação de orçamento pelo cliente",
-        "security": [],
+        "summary": "Aprovação de orçamento pelo cliente (protegida por JWT de cliente, obtido via autenticação por CPF)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "in": "path",

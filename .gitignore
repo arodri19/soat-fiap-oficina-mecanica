@@ -137,3 +137,6 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Instruções locais do Claude Code (não versionar)
+CLAUDE.md
