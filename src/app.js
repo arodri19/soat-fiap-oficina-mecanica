@@ -1,11 +1,18 @@
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
+const newrelic = require('newrelic');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./openapi.json');
 const routes = require('./routes');
+const { requestLogger } = require('./middlewares/requestLogger');
 const app = express();
 app.disable('x-powered-by');
+
+// Health check para liveness/readiness probes do Kubernetes — sem autenticação,
+// fora de /api. Não toca no banco: só confirma que o processo está de pé.
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
 
 // Aumentar limite de tamanho da requisição
 app.use(express.json({ limit: '10mb' }));
@@ -13,7 +20,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
 }));
-app.use(morgan('dev'));
+app.use(requestLogger);
 
 app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
   const spec = {
@@ -32,7 +39,8 @@ app.use((err, req, res, next) => {
   if (err.name === 'ValidationError') {
     return res.status(400).json({ message: err.message });
   }
-  console.error(err);
+  req.log?.error({ err }, 'Erro não tratado');
+  newrelic.noticeError(err, { path: req.originalUrl, method: req.method });
   res.status(500).json({ message: 'Erro interno do servidor.' });
 });
 

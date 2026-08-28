@@ -14,7 +14,7 @@ const { authenticate } = require('../middlewares/auth');
 const router = express.Router();
 
 router.use('/auth', authRoutes);
-router.use('/track', trackRoutes);
+router.use('/track', authenticate, trackRoutes);
 router.use('/clients', authenticate, clientRoutes);
 router.use('/vehicles', authenticate, vehicleRoutes);
 router.use('/services', authenticate, serviceRoutes);

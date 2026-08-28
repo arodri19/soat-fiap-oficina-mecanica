@@ -114,7 +114,16 @@ Para mais detalhes, consulte o [ADR 0001](docs/adr/0001-uso-de-postgresql-como-b
 
 ### Infraestrutura Provisionada
 
-Todo o ambiente AWS é definido como código em [`infra/`](infra/) (Terraform), organizado em três módulos reutilizáveis ([`vpc`](infra/modules/vpc/), [`eks`](infra/modules/eks/), [`rds`](infra/modules/rds/)). A imagem Docker da aplicação fica no Docker Hub (público), fora do escopo da AWS:
+Desde a Fase 3, o ambiente AWS é definido como código em **dois repositórios Terraform
+separados** deste (organização exigida pela Fase 3 — repositórios segregados por
+responsabilidade):
+
+- [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) — VPC, cluster EKS e a API Gateway (Kong + Konga)
+- [`soat-fiap-oficina-mecanica-infra-data`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-data) — RDS PostgreSQL 16 gerenciado
+
+Este repositório **não provisiona infraestrutura** — só contém a aplicação e os manifestos
+Kubernetes (`k8s/`) aplicados no cluster já existente. A imagem Docker da aplicação fica no
+Docker Hub (público), fora do escopo da AWS:
 
 ```
                           AWS
@@ -143,11 +152,12 @@ Estado do Terraform: S3 (versionado + criptografado) + lock via DynamoDB
 Imagem da aplicação: Docker Hub — arodri19/oficina-mecanica-app (público)
 ```
 
-| Recurso | Módulo | Detalhes |
+| Recurso | Repositório / Módulo | Detalhes |
 |---|---|---|
-| VPC, subnets, IGW, NAT GW | [`modules/vpc`](infra/modules/vpc/) | 2 subnets públicas + 2 privadas, uma em cada AZ |
-| Cluster EKS + Node Group | [`modules/eks`](infra/modules/eks/) | IAM roles, Security Groups, node group em subnets privadas |
-| RDS PostgreSQL 16 | [`modules/rds`](infra/modules/rds/) | Subnet privada, acesso restrito aos SGs do EKS |
+| VPC, subnets, IGW, NAT GW | `infra-kube` → `modules/vpc` | 2 subnets públicas + 2 privadas, uma em cada AZ |
+| Cluster EKS + Node Group | `infra-kube` → `modules/eks` | IAM roles, Security Groups, node group em subnets privadas |
+| API Gateway (Kong + Konga) | `infra-kube` → `kong.tf` / `konga.tf` | Kong com Postgres dedicado; Konga como UI, acessível via port-forward |
+| RDS PostgreSQL 16 | `infra-data` → `modules/rds` | Subnet privada (lida via `terraform_remote_state` do `infra-kube`), acesso restrito aos SGs do EKS |
 | Repositório Docker Hub | [`docker.io/arodri19/oficina-mecanica-app`](https://hub.docker.com/r/arodri19/oficina-mecanica-app) | Público — pull sem autenticação, tags `<sha7>` e `latest` |
 
 ### Fluxo de Deploy (CI/CD)
@@ -170,25 +180,39 @@ workflow_dispatch manual — CD (independente do CI)
         ▼
 ┌────────────────────────────────────────────────┐
 │ CD — cd.yml                                       │
-│  1. guard          → confirma disparo manual       │
-│  2. bootstrap       → cria bucket S3 + tabela      │
-│                        DynamoDB do state (se preciso) │
-│  3. provision-infra → terraform init/plan/apply    │
-│                        (VPC, EKS, RDS)              │
-│  4. deploy-k8s      → aws eks update-kubeconfig     │
-│                        kubectl apply (namespace,    │
-│                        configmap, secret c/ RDS,    │
-│                        metrics-server, deployment,  │
-│                        service, hpa)                │
-│                        kubectl rollout status        │
-│                        kubectl exec … prisma seed    │
+│  1. guard      → confirma disparo manual           │
+│  2. deploy-k8s → aws eks update-kubeconfig          │
+│                  (cluster já provisionado pelo      │
+│                   repositório infra-kube)           │
+│                  kubectl apply (namespace,          │
+│                  configmap, secret c/ RDS,          │
+│                  metrics-server, deployment,        │
+│                  service, hpa)                      │
+│                  kubectl rollout status              │
+│                  kubectl exec … prisma seed          │
 └────────────────────────────────────────────────────┘
 ```
 
-- Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD. Isso evita provisionar/destruir infraestrutura AWS sem intenção explícita.
+- Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD.
 - No CD, informe `image_tag` (SHA curto publicado pelo CI, ou `latest`) e `environment` (`dev`/`staging`/`prod`) ao disparar.
-- O apply do Terraform só executa quando `terraform plan -detailed-exitcode` indica mudanças pendentes (exitcode `2`), evitando applies desnecessários.
+- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` e `RDS_ENDPOINT` são GitHub Variables preenchidas a partir dos outputs dos repositórios `infra-kube` e `infra-data` — o cluster e o banco já precisam existir antes de rodar este CD.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
+
+## Documentação da Arquitetura
+
+| Documento | Conteúdo |
+|---|---|
+| [Diagrama de Componentes](docs/architecture/diagrama-componentes.md) | Visão de nuvem, APIs, banco e monitoramento, cruzando os 4 repositórios |
+| [Diagramas de Sequência](docs/architecture/diagrama-sequencia.md) | Autenticação via CPF e abertura de Ordem de Serviço |
+| [Modelo de Dados (ER)](docs/database/modelo-er.md) | Diagrama ER e explicação de cada relacionamento |
+| [RFC 0001](docs/rfc/0001-escolha-da-nuvem.md) | Escolha do provedor de nuvem (AWS) |
+| [RFC 0002](docs/rfc/0002-escolha-do-banco-de-dados.md) | Escolha do banco de dados (PostgreSQL) |
+| [RFC 0003](docs/rfc/0003-estrategia-de-autenticacao.md) | Estratégia de autenticação (JWT interno + CPF via Lambda) |
+| [ADR 0001](docs/adr/0001-uso-de-postgresql-como-banco-de-dados.md) | Uso do PostgreSQL |
+| [ADR 0002](docs/adr/0002-separacao-em-repositorios-por-responsabilidade.md) | Separação em 4 repositórios |
+| [ADR 0003](docs/adr/0003-uso-de-hpa-para-escalabilidade-dinamica.md) | Uso de HPA para escalabilidade dinâmica |
+| [ADR 0004](docs/adr/0004-kong-como-api-gateway.md) | Kong como API Gateway (+ Konga como UI) |
+| [ADR 0005](docs/adr/0005-terraform-remote-state-entre-repositorios.md) | `terraform_remote_state` entre os repositórios de infraestrutura |
 
 ## Como usar
 
@@ -290,56 +314,31 @@ Em produção, o cluster e o RDS já existem (provisionados pelo Terraform — v
 
 O disparo é sempre manual: aba **Actions → CD → Run workflow**, informando `image_tag` (SHA curto ou `latest`) e `environment`.
 
-### Provisionamento de Infraestrutura com Terraform
+### Provisionamento de Infraestrutura
 
-O provisionamento roda automaticamente no pipeline de CD, mas também pode ser executado localmente:
+Este repositório **não provisiona infraestrutura** (ver [Infraestrutura Provisionada](#infraestrutura-provisionada)). Para subir o cluster e o banco antes de fazer deploy aqui:
 
 ```bash
-cd infra
-cp terraform.tfvars.example terraform.tfvars
-# editar terraform.tfvars — sobretudo db_password
+# 1. VPC + EKS + API Gateway (Kong/Konga) + monitoramento K8s
+cd ../soat-fiap-oficina-mecanica-infra-kube && terraform apply
 
-# Init aponta para o backend remoto (S3 + DynamoDB) usado pelo CI/CD.
-# Os valores de bucket/tabela vêm das GitHub Variables TF_STATE_BUCKET / TF_STATE_LOCK_TABLE.
-terraform init \
-  -backend-config="bucket=<TF_STATE_BUCKET>" \
-  -backend-config="key=oficina-mecanica/terraform.tfstate" \
-  -backend-config="region=us-east-1" \
-  -backend-config="dynamodb_table=<TF_STATE_LOCK_TABLE>" \
-  -backend-config="encrypt=true"
-
-terraform plan
-terraform apply
+# 2. RDS PostgreSQL (lê rede/security groups do apply acima via terraform_remote_state)
+cd ../soat-fiap-oficina-mecanica-infra-data && terraform apply
 ```
 
-Principais outputs (`terraform output`):
-
-| Output | Uso |
-|---|---|
-| `kubeconfig_command` | Comando `aws eks update-kubeconfig` para configurar o `kubectl` |
-| `db_endpoint` / `db_connection_string` | Endpoint e `DATABASE_URL` do RDS |
-| `db_secret_patch_command` | Comando para atualizar o `Secret` do Kubernetes com o endpoint real do RDS |
-| `apply_k8s_manifests` | Lembrete do comando `kubectl apply -f ../k8s/` |
-
-Após o `apply`, configure o `kubectl` e aplique os manifestos (sem o StatefulSet de Postgres, já que o banco agora é o RDS):
+Depois, configure `kubectl` e aplique os manifestos deste repositório (sem o StatefulSet de Postgres, já que o banco agora é o RDS):
 
 ```bash
-$(terraform output -raw kubeconfig_command)
+$(terraform -chdir=../soat-fiap-oficina-mecanica-infra-kube output -raw kubeconfig_command)
 
-kubectl apply -f ../k8s/namespace.yaml
-kubectl apply -f ../k8s/configmap.yaml
-kubectl apply -f ../k8s/secret.yaml
-eval $(terraform output -raw db_secret_patch_command)   # aponta o Secret para o RDS real
-kubectl apply -f ../k8s/metrics-server.yaml
-kubectl apply -f ../k8s/app-deployment.yaml
-kubectl apply -f ../k8s/app-service.yaml
-kubectl apply -f ../k8s/app-hpa.yaml
-```
-
-Para desmontar toda a infraestrutura (⚠️ destrói VPC, EKS e RDS):
-
-```bash
-terraform destroy
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+eval $(terraform -chdir=../soat-fiap-oficina-mecanica-infra-data output -raw db_secret_patch_command)   # aponta o Secret para o RDS real
+kubectl apply -f k8s/metrics-server.yaml
+kubectl apply -f k8s/app-deployment.yaml
+kubectl apply -f k8s/app-service.yaml
+kubectl apply -f k8s/app-hpa.yaml
 ```
 
 ## Endpoints Obrigatórios — Fase 02
@@ -483,6 +482,18 @@ Swagger UI disponível em:
 ```
 http://localhost:4000/api-docs
 ```
+
+## Observabilidade
+
+Integração com **New Relic** (APM + infraestrutura), adicionada na Fase 3:
+
+- **APM**: agente `newrelic` (`newrelic.js`), carregado como primeiro `require` em `src/index.js`. Cobre latência das APIs, throughput, apdex e erros automaticamente. Fica desligado se `NEW_RELIC_LICENSE_KEY` não estiver definida (não trava a aplicação nem os testes — `agent_enabled` é `false` em `NODE_ENV=test`).
+- **Logs estruturados (JSON) com correlação**: `src/middlewares/requestLogger.js` (pino + pino-http) — cada linha de log carrega um `x-request-id` (correlaciona todas as linhas da mesma requisição, devolvido também no header de resposta) e os metadados de trace da New Relic (`trace.id`/`span.id`), habilitando "logs in context" sem precisar do forwarder oficial deles.
+- **Healthcheck**: `GET /health` (fora de `/api`, sem autenticação) — usado pelas `readinessProbe`/`livenessProbe` do Kubernetes (ver `k8s/app-deployment.yaml`).
+- **Eventos customizados** (`src/infrastructure/monitoring/newrelicEvents.js`), emitidos pelos use cases de ordem de serviço:
+  - `OrderCreated` — alimenta o painel de volume diário de OS.
+  - `OrderStatusChanged` (com `secondsInPreviousStatus`) — alimenta o painel de tempo médio de execução por status.
+- **Monitoramento de Kubernetes, alertas e dashboard**: providos pelo repositório [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) (`newrelic-k8s.tf`, `newrelic-alerts.tf`, `newrelic-dashboard.tf`) — CPU/memória do cluster, alerta por e-mail em falhas nas rotas `/orders`, e dashboard com volume de OS, tempo médio por status, erros e latência.
 
 ## Exemplos de Requisição (.http)
 

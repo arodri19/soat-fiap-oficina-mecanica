@@ -1,16 +1,17 @@
 const express = require('express');
 const asyncHandler = require('../utils/asyncHandler');
 const container = require('../infrastructure/container/Container');
+const { authorize } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/:externalId', asyncHandler(async (req, res) => {
+router.get('/:externalId', authorize(['CLIENT']), asyncHandler(async (req, res) => {
   const progress = await container.getOrderApplicationService().getOrderProgressByExternalId(req.params.externalId);
   if (!progress) return res.status(404).json({ message: 'Ordem não encontrada.' });
   return res.json(progress);
 }));
 
-router.post('/:externalId/approve', asyncHandler(async (req, res) => {
+router.post('/:externalId/approve', authorize(['CLIENT']), asyncHandler(async (req, res) => {
   const order = await container.getOrderApplicationService().approveOrder(req.params.externalId);
   if (!order) return res.status(404).json({ message: 'Ordem não encontrada.' });
   return res.json({ order, message: 'Ordem aprovada com sucesso. Execução iniciada.' });
