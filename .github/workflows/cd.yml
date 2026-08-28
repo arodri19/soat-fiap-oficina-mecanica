@@ -19,16 +19,20 @@ on:
 # ── Variáveis globais ──────────────────────────────────────────────────────────
 # Secrets (Settings → Secrets): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 #                                DB_PASSWORD, JWT_SECRET, NEW_RELIC_LICENSE_KEY
-# Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME, RDS_ENDPOINT
+# Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME
 #
 # O cluster EKS (repositório infra-kube) e o RDS (repositório infra-data) são
 # provisionados por seus próprios pipelines, fora deste repositório. Este workflow
 # só faz o deploy da aplicação num cluster/banco que já existem — por isso
-# EKS_CLUSTER_NAME e RDS_ENDPOINT são Variables, não outputs de Terraform local.
+# EKS_CLUSTER_NAME é Variable, não output de Terraform local. O endpoint do RDS
+# é resolvido dinamicamente via AWS CLI (step "Resolver endpoint do RDS") em vez
+# de outra Variable — o identifier muda de instância a cada `terraform apply`
+# do infra-data (skip_final_snapshot=true recria o recurso em vez de atualizar
+# em alguns cenários), e uma Variable fixa ficaria desatualizada silenciosamente.
 env:
   AWS_REGION:            ${{ vars.AWS_REGION || 'us-east-1' }}
   EKS_CLUSTER_NAME:      ${{ vars.EKS_CLUSTER_NAME || 'oficina-mecanica-dev' }}
-  RDS_ENDPOINT:          ${{ vars.RDS_ENDPOINT }}
+  RDS_IDENTIFIER:        oficina-mecanica-${{ github.event.inputs.environment }}-postgres
   DOCKERHUB_REPOSITORY:  arodri19/oficina-mecanica-app
   NAMESPACE:             'oficina-mecanica'
 
@@ -65,6 +69,21 @@ jobs:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
+
+      - name: Resolver endpoint do RDS
+        run: |
+          ENDPOINT=$(aws rds describe-db-instances \
+            --db-instance-identifier "${{ env.RDS_IDENTIFIER }}" \
+            --region "${{ env.AWS_REGION }}" \
+            --query "DBInstances[0].Endpoint.Address" --output text)
+
+          if [ -z "$ENDPOINT" ] || [ "$ENDPOINT" = "None" ]; then
+            echo "::error::RDS '${{ env.RDS_IDENTIFIER }}' não encontrado — rode o pipeline do infra-data antes deste."
+            exit 1
+          fi
+
+          echo "RDS_ENDPOINT=$ENDPOINT" >> "$GITHUB_ENV"
+          echo "Endpoint resolvido: $ENDPOINT"
 
       - name: Resolver URI da imagem no Docker Hub
         id: image
