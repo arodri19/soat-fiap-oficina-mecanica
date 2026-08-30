@@ -124,7 +124,7 @@ Docker Hub (fora da AWS)
 
 **Dockerfile multi-stage:**
 ```dockerfile
-Stage 1 (builder): node:20-alpine + npx prisma generate
+Stage 1 (builder): node:24-alpine + npx prisma generate
 Stage 2 (production): deps de produção + cliente Prisma gerado + código
 ```
 

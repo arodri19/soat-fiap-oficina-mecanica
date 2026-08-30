@@ -196,7 +196,11 @@ workflow_dispatch manual — CD (independente do CI)
 
 - Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD.
 - No CD, informe `image_tag` (SHA curto publicado pelo CI, ou `latest`) e `environment` (`dev`/`staging`/`prod`) ao disparar.
-- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` e `RDS_ENDPOINT` são GitHub Variables preenchidas a partir dos outputs dos repositórios `infra-kube` e `infra-data` — o cluster e o banco já precisam existir antes de rodar este CD.
+- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` é uma GitHub Variable
+  (deve bater com o cluster criado pelo repositório `infra-kube`); o endereço do RDS é
+  resolvido dinamicamente via `aws rds describe-db-instances` (identifier previsível:
+  `oficina-mecanica-<environment>-postgres`) — o cluster e o banco já precisam existir antes
+  de rodar este CD.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
 
 ## Documentação da Arquitetura
@@ -221,7 +225,7 @@ workflow_dispatch manual — CD (independente do CI)
 ### Pré-requisitos
 
 - Docker e Docker Compose instalados
-- (Opcional) Node.js 20+ para desenvolvimento local
+- (Opcional) Node.js 24+ (LTS) para desenvolvimento local — versão fixada em `.nvmrc`
 
 ### Rodar com Docker Compose
 
@@ -479,11 +483,17 @@ Configuração de cobertura (`jest.config.js`):
 
 ## Documentação da API
 
-Swagger UI disponível em:
+Swagger UI resolve a própria URL do servidor dinamicamente a partir da requisição
+(`req.protocol`/`req.get('host')`, ver `src/app.js`) — funciona sem configuração extra em
+qualquer endereço que sirva a aplicação:
 
-```
-http://localhost:4000/api-docs
-```
+- Local: `http://localhost:4000/api-docs`
+- Depois do deploy no cluster (`k8s/app-service.yaml` é `type: LoadBalancer`): o endereço
+  público sai no resumo do workflow `CD — Deploy Kubernetes` (job summary), ou via:
+  ```bash
+  kubectl get svc oficina-app-service -n oficina-mecanica \
+    -o jsonpath='http://{.status.loadBalancer.ingress[0].hostname}/api-docs{"\n"}'
+  ```
 
 ## Observabilidade
 
