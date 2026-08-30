@@ -12,14 +12,36 @@ function recordOrderCreated({ orderId, externalId, servicesCount, budgetValue })
   });
 }
 
+// "1h 15m 30s" em vez do número bruto de segundos — um serviço de oficina demora
+// horas, não segundos, e o widget de duração do New Relic (data_format type=duration)
+// exige adivinhar o nome exato da coluna gerada pela query, o que não dá pra
+// verificar sem abrir o dashboard. Formatando aqui, o dashboard só exibe a string
+// (nenhuma mágica de formatação do lado da New Relic).
+function formatDuration(totalSeconds) {
+  if (totalSeconds == null || Number.isNaN(totalSeconds)) return null;
+
+  const seconds = Math.max(0, Math.round(totalSeconds));
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  const parts = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (hours > 0 || minutes > 0) parts.push(`${minutes}m`);
+  parts.push(`${remainingSeconds}s`);
+
+  return parts.join(' ');
+}
+
 function recordOrderStatusChanged({ orderId, externalId, fromStatus, toStatus, secondsInPreviousStatus }) {
   newrelic.recordCustomEvent('OrderStatusChanged', {
     orderId,
     externalId,
     fromStatus,
     toStatus,
-    secondsInPreviousStatus
+    secondsInPreviousStatus,
+    secondsInPreviousStatusLabel: formatDuration(secondsInPreviousStatus)
   });
 }
 
-module.exports = { recordOrderCreated, recordOrderStatusChanged };
+module.exports = { recordOrderCreated, recordOrderStatusChanged, formatDuration };
