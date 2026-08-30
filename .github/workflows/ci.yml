@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
 
       - name: Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@v7.0.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -75,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7.0.1
 
       - name: Login no Docker Hub
         uses: docker/login-action@v3.3.0
