@@ -47,6 +47,43 @@ async function getAverageExecutionTime(req, res) {
   return res.json(result);
 }
 
+/**
+ * @swagger
+ * /metrics/status-duration-averages/recompute:
+ *   post:
+ *     summary: Recalcular a média real de tempo por status e republicar na New Relic
+ *     description: Consulta a New Relic (average() sobre o histórico de OrderStatusChanged), formata cada média como "1h 15m" e publica um evento OrderStatusAverageDuration por status — é isso que o painel "Tempo médio de execução por status" do dashboard exibe (latest() desse evento).
+ *     tags: [Métricas]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Médias recalculadas e republicadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   fromStatus:
+ *                     type: string
+ *                     example: EM_DIAGNOSTICO
+ *                   averageSeconds:
+ *                     type: number
+ *                     example: 84.7
+ *                   averageLabel:
+ *                     type: string
+ *                     example: "1m 25s"
+ *       400:
+ *         description: NEW_RELIC_ACCOUNT_ID/NEW_RELIC_API_KEY não configurados
+ */
+async function recomputeStatusDurationAverages(req, res) {
+  const result = await metricsService.recomputeStatusDurationAverages();
+  return res.json(result);
+}
+
 module.exports = {
-  getAverageExecutionTime
+  getAverageExecutionTime,
+  recomputeStatusDurationAverages
 };
