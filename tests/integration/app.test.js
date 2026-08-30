@@ -69,6 +69,20 @@ describe('API de integração', () => {
     expect(response.body.user.email).toBe('admin@oficina.com');
   });
 
+  it('serve o Swagger com a URL da API Gateway injetada em /auth/cpf e /me', async () => {
+    process.env.API_GATEWAY_URL = 'https://abc123.execute-api.us-east-1.amazonaws.com';
+
+    // O spec de verdade fica embutido em swagger-ui-init.js (via req.swaggerDoc),
+    // não na página HTML principal (/api-docs/) — ver comentário em src/app.js.
+    const response = await request(app).get('/api-docs/swagger-ui-init.js');
+
+    expect(response.status).toBe(200);
+    expect(response.text).not.toContain('API_GATEWAY_URL_PLACEHOLDER');
+    expect(response.text).toContain('abc123.execute-api.us-east-1.amazonaws.com');
+
+    delete process.env.API_GATEWAY_URL;
+  });
+
   it.skip('deve alterar o status da ordem para aguardando aprovação e em execução', async () => {
     // This test requires existing orders in the database
     // Skipping for now as it tests the old system

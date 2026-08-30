@@ -495,6 +495,13 @@ qualquer endereço que sirva a aplicação:
     -o jsonpath='http://{.status.loadBalancer.ingress[0].hostname}/api-docs{"\n"}'
   ```
 
+O Swagger também documenta `POST /auth/cpf` e `GET /me` (tag "Autenticação (Cliente)") —
+endpoints implementados no repositório `serverless` (Lambda + API Gateway), não aqui. Cada
+um tem um `servers` próprio no `openapi.json` apontando pra API Gateway real, então o
+"Try it out" desses dois chama o host certo em vez deste servidor — a URL é resolvida
+dinamicamente no deploy (`API_GATEWAY_URL`, ver step "Resolver URL da API Gateway" no
+`cd.yml`) e injetada via `req.swaggerDoc` (`src/app.js`).
+
 ## Observabilidade
 
 Integração com **New Relic** (APM + infraestrutura), adicionada na Fase 3:
