@@ -89,6 +89,21 @@ spec:
                   name: oficina-secrets
                   key: API_GATEWAY_URL
                   optional: true
+            # NEW_RELIC_API_KEY (User API Key) é diferente da NEW_RELIC_LICENSE_KEY
+            # acima — essa aqui consulta a New Relic (NerdGraph), não ingere dados.
+            # Usada só por POST /api/metrics/status-duration-averages/recompute.
+            - name: NEW_RELIC_ACCOUNT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: NEW_RELIC_ACCOUNT_ID
+                  optional: true
+            - name: NEW_RELIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: NEW_RELIC_API_KEY
+                  optional: true
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:

@@ -18,8 +18,11 @@ on:
 
 # ── Variáveis globais ──────────────────────────────────────────────────────────
 # Secrets (Settings → Secrets): AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
-#                                DB_PASSWORD, JWT_SECRET, NEW_RELIC_LICENSE_KEY
-# Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME
+#                                DB_PASSWORD, JWT_SECRET, NEW_RELIC_LICENSE_KEY,
+#                                NEWRELIC_API_KEY (User API Key, NRAK-... — para
+#                                consultar a New Relic; diferente da LICENSE_KEY
+#                                acima, que só ingere dados)
+# Variables (Settings → Variables): AWS_REGION, EKS_CLUSTER_NAME, NEWRELIC_ACCOUNT_ID
 #
 # O cluster EKS (repositório infra-kube) e o RDS (repositório infra-data) são
 # provisionados por seus próprios pipelines, fora deste repositório. Este workflow
@@ -141,6 +144,8 @@ jobs:
             --from-literal=DATABASE_URL="$DB_URL" \
             --from-literal=NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
             --from-literal=API_GATEWAY_URL="${{ env.API_GATEWAY_URL }}" \
+            --from-literal=NEW_RELIC_ACCOUNT_ID="${{ vars.NEWRELIC_ACCOUNT_ID }}" \
+            --from-literal=NEW_RELIC_API_KEY="${{ secrets.NEWRELIC_API_KEY }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Instalar metrics-server (necessário para HPA)

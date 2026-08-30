@@ -44,4 +44,21 @@ function recordOrderStatusChanged({ orderId, externalId, fromStatus, toStatus, s
   });
 }
 
-module.exports = { recordOrderCreated, recordOrderStatusChanged, formatDuration };
+// Snapshot da média REAL (não o último valor) de tempo por status, já formatada —
+// publicado por src/services/metrics.service.js depois de consultar a própria New
+// Relic (average() sobre o histórico) via NerdGraph. O dashboard mostra só o
+// latest() disso, então nunca precisa calcular/formatar nada do lado da New Relic.
+function recordOrderStatusAverageDuration({ fromStatus, averageSeconds, averageLabel }) {
+  newrelic.recordCustomEvent('OrderStatusAverageDuration', {
+    fromStatus,
+    averageSeconds,
+    averageLabel
+  });
+}
+
+module.exports = {
+  recordOrderCreated,
+  recordOrderStatusChanged,
+  recordOrderStatusAverageDuration,
+  formatDuration
+};
