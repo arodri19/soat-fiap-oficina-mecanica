@@ -1,7 +1,9 @@
 # ADR 0004: Kong como API Gateway, com Konga como UI de administração
 
 ## Status
-Aceito
+Superado pelo [ADR 0006](0006-aws-api-gateway-como-api-gateway.md) — o Kong foi
+substituído pelo AWS API Gateway. Mantido aqui como registro histórico da decisão
+original e do porquê ela deixou de valer.
 
 ## Contexto
 A Fase 3 exige um API Gateway para "controle e roteamento", citando como exemplos AWS API Gateway, Kong e Traefik. O sistema passou a ter dois back-ends distintos por trás de uma única superfície de API: a aplicação principal (Kubernetes/EKS) e a function serverless de autenticação via CPF (AWS Lambda). É necessário um ponto único de entrada capaz de rotear para ambos.
