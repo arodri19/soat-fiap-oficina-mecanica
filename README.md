@@ -118,8 +118,9 @@ Desde a Fase 3, o ambiente AWS é definido como código em **dois repositórios 
 separados** deste (organização exigida pela Fase 3 — repositórios segregados por
 responsabilidade):
 
-- [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) — VPC, cluster EKS e a API Gateway (Kong + Konga)
+- [`soat-fiap-oficina-mecanica-infra-kube`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-kube) — VPC, cluster EKS e monitoramento de cluster (New Relic)
 - [`soat-fiap-oficina-mecanica-infra-data`](https://github.com/arodri19/soat-fiap-oficina-mecanica-infra-data) — RDS PostgreSQL 16 gerenciado
+- [`soat-fiap-oficina-mecanica-serverless`](https://github.com/arodri19/soat-fiap-oficina-mecanica-serverless) — Lambda de autenticação e a API Gateway (AWS API Gateway)
 
 Este repositório **não provisiona infraestrutura** — só contém a aplicação e os manifestos
 Kubernetes (`k8s/`) aplicados no cluster já existente. A imagem Docker da aplicação fica no
@@ -156,8 +157,8 @@ Imagem da aplicação: Docker Hub — arodri19/oficina-mecanica-app (público)
 |---|---|---|
 | VPC, subnets, IGW, NAT GW | `infra-kube` → `modules/vpc` | 2 subnets públicas + 2 privadas, uma em cada AZ |
 | Cluster EKS + Node Group | `infra-kube` → `modules/eks` | IAM roles, Security Groups, node group em subnets privadas |
-| API Gateway (Kong + Konga) | `infra-kube` → `kong.tf` / `konga.tf` | Kong com Postgres dedicado; Konga como UI, acessível via port-forward |
 | RDS PostgreSQL 16 | `infra-data` → `modules/rds` | Subnet privada (lida via `terraform_remote_state` do `infra-kube`), acesso restrito aos SGs do EKS |
+| API Gateway (HTTP API) | `serverless` → `api-gateway.tf` | Rota pública de login e rota protegida por Lambda Authorizer (`authorizer.tf`) |
 | Repositório Docker Hub | [`docker.io/arodri19/oficina-mecanica-app`](https://hub.docker.com/r/arodri19/oficina-mecanica-app) | Público — pull sem autenticação, tags `<sha7>` e `latest` |
 
 ### Fluxo de Deploy (CI/CD)
@@ -195,7 +196,11 @@ workflow_dispatch manual — CD (independente do CI)
 
 - Os dois workflows são **100% manuais** (`workflow_dispatch`) — não há trigger automático em push nem encadeamento entre CI e CD.
 - No CD, informe `image_tag` (SHA curto publicado pelo CI, ou `latest`) e `environment` (`dev`/`staging`/`prod`) ao disparar.
-- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` e `RDS_ENDPOINT` são GitHub Variables preenchidas a partir dos outputs dos repositórios `infra-kube` e `infra-data` — o cluster e o banco já precisam existir antes de rodar este CD.
+- Este repositório **não provisiona infraestrutura**: `EKS_CLUSTER_NAME` é uma GitHub Variable
+  (deve bater com o cluster criado pelo repositório `infra-kube`); o endereço do RDS é
+  resolvido dinamicamente via `aws rds describe-db-instances` (identifier previsível:
+  `oficina-mecanica-<environment>-postgres`) — o cluster e o banco já precisam existir antes
+  de rodar este CD.
 - Credenciais e parâmetros do pipeline (Secrets/Variables do GitHub) estão documentados em [`ci-cd/secrets.example.env`](ci-cd/secrets.example.env).
 
 ## Documentação da Arquitetura
@@ -211,15 +216,16 @@ workflow_dispatch manual — CD (independente do CI)
 | [ADR 0001](docs/adr/0001-uso-de-postgresql-como-banco-de-dados.md) | Uso do PostgreSQL |
 | [ADR 0002](docs/adr/0002-separacao-em-repositorios-por-responsabilidade.md) | Separação em 4 repositórios |
 | [ADR 0003](docs/adr/0003-uso-de-hpa-para-escalabilidade-dinamica.md) | Uso de HPA para escalabilidade dinâmica |
-| [ADR 0004](docs/adr/0004-kong-como-api-gateway.md) | Kong como API Gateway (+ Konga como UI) |
+| [ADR 0004](docs/adr/0004-kong-como-api-gateway.md) | Kong como API Gateway (+ Konga como UI) — **superado pelo ADR 0006** |
 | [ADR 0005](docs/adr/0005-terraform-remote-state-entre-repositorios.md) | `terraform_remote_state` entre os repositórios de infraestrutura |
+| [ADR 0006](docs/adr/0006-aws-api-gateway-como-api-gateway.md) | AWS API Gateway substitui o Kong como API Gateway |
 
 ## Como usar
 
 ### Pré-requisitos
 
 - Docker e Docker Compose instalados
-- (Opcional) Node.js 20+ para desenvolvimento local
+- (Opcional) Node.js 24+ (LTS) para desenvolvimento local — versão fixada em `.nvmrc`
 
 ### Rodar com Docker Compose
 
@@ -319,7 +325,7 @@ O disparo é sempre manual: aba **Actions → CD → Run workflow**, informando 
 Este repositório **não provisiona infraestrutura** (ver [Infraestrutura Provisionada](#infraestrutura-provisionada)). Para subir o cluster e o banco antes de fazer deploy aqui:
 
 ```bash
-# 1. VPC + EKS + API Gateway (Kong/Konga) + monitoramento K8s
+# 1. VPC + EKS + monitoramento K8s
 cd ../soat-fiap-oficina-mecanica-infra-kube && terraform apply
 
 # 2. RDS PostgreSQL (lê rede/security groups do apply acima via terraform_remote_state)
@@ -477,11 +483,17 @@ Configuração de cobertura (`jest.config.js`):
 
 ## Documentação da API
 
-Swagger UI disponível em:
+Swagger UI resolve a própria URL do servidor dinamicamente a partir da requisição
+(`req.protocol`/`req.get('host')`, ver `src/app.js`) — funciona sem configuração extra em
+qualquer endereço que sirva a aplicação:
 
-```
-http://localhost:4000/api-docs
-```
+- Local: `http://localhost:4000/api-docs`
+- Depois do deploy no cluster (`k8s/app-service.yaml` é `type: LoadBalancer`): o endereço
+  público sai no resumo do workflow `CD — Deploy Kubernetes` (job summary), ou via:
+  ```bash
+  kubectl get svc oficina-app-service -n oficina-mecanica \
+    -o jsonpath='http://{.status.loadBalancer.ingress[0].hostname}/api-docs{"\n"}'
+  ```
 
 ## Observabilidade
 

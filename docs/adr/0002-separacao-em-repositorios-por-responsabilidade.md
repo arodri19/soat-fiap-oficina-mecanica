@@ -11,7 +11,7 @@ Dividir o sistema em quatro repositórios:
 
 1. **`soat-fiap-oficina-mecanica`** — aplicação principal (Node.js/Express), executando em Kubernetes. Contém só código de aplicação e manifestos K8s (`k8s/`), sem Terraform.
 2. **`soat-fiap-oficina-mecanica-serverless`** — Function Serverless (AWS Lambda) de autenticação de clientes via CPF, com seu próprio Terraform.
-3. **`soat-fiap-oficina-mecanica-infra-kube`** — Terraform da rede (VPC) e do cluster Kubernetes (EKS), da API Gateway (Kong + Konga) e do monitoramento de cluster (New Relic).
+3. **`soat-fiap-oficina-mecanica-infra-kube`** — Terraform da rede (VPC), do cluster Kubernetes (EKS) e do monitoramento de cluster (New Relic). A API Gateway (AWS API Gateway) vive no repositório `serverless` — ver [ADR 0006](0006-aws-api-gateway-como-api-gateway.md).
 4. **`soat-fiap-oficina-mecanica-infra-data`** — Terraform do banco de dados gerenciado (RDS PostgreSQL).
 
 A comunicação entre os Terraforms de infraestrutura acontece via `terraform_remote_state` (cada repositório lê os outputs de que precisa do state dos outros, publicado no mesmo bucket S3) — ver [ADR 0005](0005-terraform-remote-state-entre-repositorios.md).
