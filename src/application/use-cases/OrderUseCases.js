@@ -199,9 +199,11 @@ class ApproveOrderUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute(externalId) {
+  // requesterId: id (ClientPF) do cliente autenticado — sem isso, qualquer cliente
+  // logado poderia aprovar orçamento de outra pessoa só sabendo o externalId dela.
+  async execute(externalId, requesterId) {
     const raw = await this.orderRepository.findOrderByExternalId(externalId);
-    if (!raw) return null;
+    if (!raw || raw.clientPFId !== requesterId) return null;
 
     const order = Order.fromPrisma(raw);
     if (!order.status.isAwaitingApproval()) {
@@ -243,9 +245,11 @@ class GetOrderProgressByExternalIdUseCase {
     this.orderRepository = orderRepository;
   }
 
-  async execute(externalId) {
+  // requesterId: id (ClientPF) do cliente autenticado — sem isso, qualquer cliente
+  // logado poderia ver a OS de outra pessoa só sabendo o externalId dela.
+  async execute(externalId, requesterId) {
     const order = await this.orderRepository.findOrderByExternalId(externalId);
-    if (!order) return null;
+    if (!order || order.clientPFId !== requesterId) return null;
     return OrderProgressResponseDTO.fromOrder(order);
   }
 }

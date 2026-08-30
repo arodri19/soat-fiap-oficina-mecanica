@@ -41,16 +41,16 @@ class OrderApplicationService {
       .execute({ orderId: id, orderServiceServiceId, partId, quantity });
   }
 
-  async approveOrder(externalId) {
-    return new ApproveOrderUseCase(this.orderRepository).execute(externalId);
+  async approveOrder(externalId, requesterId) {
+    return new ApproveOrderUseCase(this.orderRepository).execute(externalId, requesterId);
   }
 
   async getOrderProgress(id) {
     return new GetOrderProgressUseCase(this.orderRepository).execute(id);
   }
 
-  async getOrderProgressByExternalId(externalId) {
-    return new GetOrderProgressByExternalIdUseCase(this.orderRepository).execute(externalId);
+  async getOrderProgressByExternalId(externalId, requesterId) {
+    return new GetOrderProgressByExternalIdUseCase(this.orderRepository).execute(externalId, requesterId);
   }
 }
 
