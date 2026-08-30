@@ -1,6 +1,9 @@
 jest.mock('../../../src/middlewares/auth', () => ({
   authenticate: (req, res, next) => {
-    req.user = { id: 1, role: 'ATTENDANT' };
+    // sub replica o claim real do JWT (payload de AuthUseCases/handler.js da Lambda de
+    // login) — as rotas de track dependem dele pra restringir a OS ao dono (ver
+    // tests/unit/application/OrderUseCases.security.test.js para a checagem em si).
+    req.user = { id: 1, sub: 1, role: 'ATTENDANT' };
     next();
   },
   authorize: () => (req, res, next) => next()
@@ -177,6 +180,8 @@ describe('GET /api/track/:externalId (protegido por JWT de cliente)', () => {
     const res = await request(app).get('/api/track/uuid-123');
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('AGUARDANDO_APROVACAO');
+    // req.user.sub precisa ser repassado — é o que restringe a OS ao dono (fix de IDOR).
+    expect(svc.getOrderProgressByExternalId).toHaveBeenCalledWith('uuid-123', 1);
   });
 
   it('retorna 404 para externalId inexistente', async () => {
@@ -192,6 +197,8 @@ describe('POST /api/track/:externalId/approve (protegido por JWT de cliente)', (
     const res = await request(app).post('/api/track/uuid-123/approve');
     expect(res.status).toBe(200);
     expect(res.body.message).toContain('aprovada');
+    // req.user.sub precisa ser repassado — é o que restringe a OS ao dono (fix de IDOR).
+    expect(svc.approveOrder).toHaveBeenCalledWith('uuid-123', 1);
   });
 
   it('retorna 404 para externalId inexistente', async () => {
