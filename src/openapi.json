@@ -430,6 +430,124 @@
     }
   ],
   "paths": {
+    "/auth/cpf": {
+      "post": {
+        "tags": [
+          "Autenticação (Cliente)"
+        ],
+        "summary": "Login de cliente via CPF — servido por fora deste serviço (AWS Lambda + API Gateway)",
+        "description": "Valida o CPF, confirma que o cliente existe na base e devolve um JWT — mesmo formato/segredo aceito pelo middleware `authenticate` deste serviço. Implementado no repositório `soat-fiap-oficina-mecanica-serverless` (`src/handler.js`); documentado aqui para dar uma visão única da API, mas a chamada real vai para a API Gateway (`servers` deste path), não para este servidor.",
+        "servers": [
+          {
+            "url": "API_GATEWAY_URL_PLACEHOLDER",
+            "description": "AWS API Gateway (repositório serverless)"
+          }
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cpf"
+                ],
+                "properties": {
+                  "cpf": {
+                    "type": "string",
+                    "example": "529.982.247-25"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cliente encontrado — token emitido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIs..."
+                    },
+                    "expiresIn": {
+                      "type": "string",
+                      "example": "1h"
+                    },
+                    "client": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer",
+                          "example": 1
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "Maria Oliveira"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "CPF malformado ou com dígito verificador inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CPF válido, mas sem cliente cadastrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "Autenticação (Cliente)"
+        ],
+        "summary": "Rota protegida de demonstração do Lambda Authorizer — servida por fora deste serviço (AWS Lambda + API Gateway)",
+        "description": "Exige um JWT válido (emitido por `POST /auth/cpf`) no header `Authorization: Bearer <token>` — o Lambda Authorizer da API Gateway valida antes de deixar a chamada chegar na função. Implementado no repositório `soat-fiap-oficina-mecanica-serverless` (`authorizer.tf`, `src/authorizer.js`).",
+        "servers": [
+          {
+            "url": "API_GATEWAY_URL_PLACEHOLDER",
+            "description": "AWS API Gateway (repositório serverless)"
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token válido — requisição autorizada pelo Lambda Authorizer"
+          },
+          "401": {
+            "description": "Token ausente, inválido, expirado ou com issuer incorreto"
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "tags": [
@@ -2468,6 +2586,10 @@
     {
       "name": "⭐ Fase 02 — Requisitos Obrigatórios",
       "description": "Os cinco endpoints obrigatórios entregues na **Fase 02** do Tech Challenge FIAP SOAT: Abertura de OS, Listagem de OS, Atualização de status, Consulta pública de status e Aprovação de orçamento."
+    },
+    {
+      "name": "Autenticação (Cliente)",
+      "description": "Servidos por fora deste serviço: AWS Lambda + API Gateway, no repositório `soat-fiap-oficina-mecanica-serverless`. Documentados aqui só para dar visão única da API — o `servers` de cada operação aponta para o host real (API Gateway), não para este servidor."
     }
   ]
 }
