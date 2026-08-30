@@ -224,6 +224,18 @@ class ApproveOrderUseCase {
       status: order.status.toString()
     });
 
+    // Faltava aqui (só UpdateOrderStatusUseCase, o fluxo do staff, disparava esse
+    // evento) — a aprovação do cliente nunca entrava no painel de tempo médio por status.
+    recordOrderStatusChanged({
+      orderId: raw.id,
+      externalId: raw.externalId,
+      fromStatus: raw.status,
+      toStatus: order.status.toString(),
+      secondsInPreviousStatus: raw.updatedAt
+        ? (Date.now() - new Date(raw.updatedAt).getTime()) / 1000
+        : null
+    });
+
     return updated;
   }
 }
