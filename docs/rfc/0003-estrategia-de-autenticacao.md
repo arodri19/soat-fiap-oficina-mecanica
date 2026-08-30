@@ -25,6 +25,6 @@ Opção 3: JWT emitido pela function serverless (`soat-fiap-oficina-mecanica-ser
 
 ## Decisão
 Adotado.
-- `POST /auth/cpf` (via Kong → Lambda) → valida o CPF, consulta `ClientPF`, devolve `{ token, expiresIn, client }` com `role: "CLIENT"`.
+- `POST /auth/cpf` (via API Gateway → Lambda, [ADR 0006](../adr/0006-aws-api-gateway-como-api-gateway.md)) → valida o CPF, consulta `ClientPF`, devolve `{ token, expiresIn, client }` com `role: "CLIENT"`.
 - `GET /api/track/:externalId` e `POST /api/track/:externalId/approve` passam a exigir `Authorization: Bearer <token>` com `role: CLIENT` (`src/routes/track.routes.js`, `src/routes/index.js`).
 - Nenhuma lógica nova de verificação de JWT foi criada no backend principal — o middleware `authenticate`/`authorize` já usado pelas rotas de funcionários cobre os dois casos.

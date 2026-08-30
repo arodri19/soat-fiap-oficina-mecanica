@@ -5,39 +5,37 @@
 ```mermaid
 sequenceDiagram
     actor Cliente
-    participant Kong as Kong (API Gateway)
+    participant GW as API Gateway
     participant Lambda as Lambda auth-cpf
     participant RDS as RDS PostgreSQL
     participant App as oficina-app
 
-    Cliente ->> Kong: POST /auth/cpf { cpf }
-    Kong ->> Lambda: proxy (Function URL)
+    Cliente ->> GW: POST /auth/cpf { cpf }
+    GW ->> Lambda: proxy (AWS_PROXY)
     Lambda ->> Lambda: valida dígito verificador do CPF
     alt CPF inválido
-        Lambda -->> Kong: 400 CPF inválido
-        Kong -->> Cliente: 400
+        Lambda -->> GW: 400 CPF inválido
+        GW -->> Cliente: 400
     else CPF válido
         Lambda ->> RDS: SELECT id, name, cpf FROM ClientPF WHERE cpf = $1
         alt cliente não encontrado
             RDS -->> Lambda: nenhuma linha
-            Lambda -->> Kong: 404 Cliente não encontrado
-            Kong -->> Cliente: 404
+            Lambda -->> GW: 404 Cliente não encontrado
+            GW -->> Cliente: 404
         else cliente encontrado
             RDS -->> Lambda: { id, name, cpf }
             Lambda ->> Lambda: jwt.sign({ sub, cpf, name, role: CLIENT })
-            Lambda -->> Kong: 200 { token, expiresIn, client }
-            Kong -->> Cliente: 200 { token, ... }
+            Lambda -->> GW: 200 { token, expiresIn, client }
+            GW -->> Cliente: 200 { token, ... }
         end
     end
 
-    Note over Cliente,App: chamadas seguintes usam o token como Bearer
+    Note over Cliente,App: chamadas seguintes usam o token como Bearer.<br/>App e API Gateway validam o MESMO token de forma<br/>independente (mesmo JWT_SECRET) — não há proxy entre eles.
 
-    Cliente ->> Kong: GET /api/track/:externalId<br/>Authorization: Bearer <token>
-    Kong ->> App: proxy
+    Cliente ->> App: GET /api/track/:externalId<br/>Authorization: Bearer <token>
     App ->> App: authenticate (valida JWT, mesmo JWT_SECRET)
     App ->> App: authorize(["CLIENT"]) — checa role no payload
-    App -->> Kong: 200 progresso da OS
-    Kong -->> Cliente: 200
+    App -->> Cliente: 200 progresso da OS
 ```
 
 ## 2. Abertura de Ordem de Serviço
@@ -45,13 +43,11 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Atendente
-    participant Kong as Kong (API Gateway)
     participant App as oficina-app
     participant RDS as RDS PostgreSQL
     participant NR as New Relic
 
-    Atendente ->> Kong: POST /api/orders<br/>Authorization: Bearer <token staff><br/>{ cliente, veículo, serviços, peças }
-    Kong ->> App: proxy
+    Atendente ->> App: POST /api/orders<br/>Authorization: Bearer <token staff><br/>{ cliente, veículo, serviços, peças }
     App ->> App: authenticate (JWT de funcionário)
     App ->> App: CreateOrderUseCase.execute(dto)
     App ->> RDS: INSERT OrderService (status = RECEBIDA)
@@ -68,8 +64,7 @@ sequenceDiagram
     end
     App ->> RDS: calcula e grava budgetValue<br/>(Σ serviço.price + Σ peça.price × quantidade)
     App ->> NR: recordCustomEvent("OrderCreated", { orderId, externalId, servicesCount, budgetValue })
-    App -->> Kong: 201 { id, externalId, status: RECEBIDA, budgetValue, ... }
-    Kong -->> Atendente: 201
+    App -->> Atendente: 201 { id, externalId, status: RECEBIDA, budgetValue, ... }
 ```
 
 Ver também: [diagrama de componentes](diagrama-componentes.md) e [modelo de dados](../database/modelo-er.md).

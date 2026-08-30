@@ -145,6 +145,23 @@ jobs:
             --namespace="${{ env.NAMESPACE }}" \
             --timeout=300s
 
+      - name: Resolver endereço público (Swagger)
+        run: |
+          echo "Aguardando o LoadBalancer do Service receber um endereço público..."
+          for i in $(seq 1 30); do
+            HOST=$(kubectl get svc oficina-app-service -n "${{ env.NAMESPACE }}" \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            [ -n "$HOST" ] && break
+            sleep 10
+          done
+
+          if [ -z "$HOST" ]; then
+            echo "::warning::LoadBalancer ainda sem endereço público após 5min — confira 'kubectl get svc' manualmente."
+          else
+            echo "APP_HOST=$HOST" >> "$GITHUB_ENV"
+            echo "Endereço público: http://$HOST"
+          fi
+
       - name: Executar seed do banco de dados
         run: |
           POD=$(kubectl get pods -n "${{ env.NAMESPACE }}" \
@@ -184,3 +201,7 @@ jobs:
           echo "| Cluster EKS | \`${{ env.EKS_CLUSTER_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| RDS Endpoint | \`${{ env.RDS_ENDPOINT }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| Namespace | \`${{ env.NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ env.APP_HOST }}" ]; then
+            echo "| Swagger UI | http://${{ env.APP_HOST }}/api-docs |" >> $GITHUB_STEP_SUMMARY
+            echo "| Healthcheck | http://${{ env.APP_HOST }}/health |" >> $GITHUB_STEP_SUMMARY
+          fi
