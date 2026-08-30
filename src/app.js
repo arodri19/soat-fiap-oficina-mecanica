@@ -22,13 +22,25 @@ app.use(cors({
 }));
 app.use(requestLogger);
 
-app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
-  const spec = {
-    ...swaggerSpec,
+// Spec por requisição via req.swaggerDoc — swaggerUi.serve (estático) não regenera
+// o swagger-ui-init.js por request, só swaggerUi.serveFiles()/.setup() fazem isso
+// quando req.swaggerDoc está setado (padrão documentado da lib). Precisamos disso
+// porque: (a) o server da rota atual muda com req.protocol/req.get('host'), e
+// (b) /auth/cpf e /me (openapi.json) são servidos por fora deste processo — Lambda +
+// API Gateway do repositório serverless — via "servers" por operação, cujo host
+// (API_GATEWAY_URL) só é conhecido em runtime (resolvido no deploy, ver cd.yml).
+app.use('/api-docs', (req, res, next) => {
+  const apiGatewayUrl = process.env.API_GATEWAY_URL || 'https://<configure API_GATEWAY_URL>';
+  const specWithApiGateway = JSON.parse(
+    JSON.stringify(swaggerSpec).replaceAll('API_GATEWAY_URL_PLACEHOLDER', apiGatewayUrl)
+  );
+
+  req.swaggerDoc = {
+    ...specWithApiGateway,
     servers: [{ url: `${req.protocol}://${req.get('host')}/api`, description: 'Servidor atual' }],
   };
-  swaggerUi.setup(spec)(req, res, next);
-});
+  next();
+}, swaggerUi.serveFiles(swaggerSpec), swaggerUi.setup());
 app.use('/api', routes);
 
 // Tratamento de erros de parsing JSON

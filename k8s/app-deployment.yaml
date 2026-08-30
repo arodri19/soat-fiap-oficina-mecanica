@@ -81,6 +81,14 @@ spec:
                 configMapKeyRef:
                   name: oficina-config
                   key: NEW_RELIC_APP_NAME
+            # Não é segredo — vai no Secret (não no ConfigMap estático) porque é
+            # resolvido dinamicamente a cada deploy, igual DATABASE_URL (ver cd.yml).
+            - name: API_GATEWAY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: oficina-secrets
+                  key: API_GATEWAY_URL
+                  optional: true
             - name: LOG_LEVEL
               valueFrom:
                 configMapKeyRef:

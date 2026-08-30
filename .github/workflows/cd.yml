@@ -85,6 +85,21 @@ jobs:
           echo "RDS_ENDPOINT=$ENDPOINT" >> "$GITHUB_ENV"
           echo "Endpoint resolvido: $ENDPOINT"
 
+      # Não é fatal como o RDS: o app funciona sem isso, só o Swagger de /auth/cpf e
+      # /me (openapi.json) fica sem link clicável até o serverless ser implantado.
+      - name: Resolver URL da API Gateway (Swagger de /auth/cpf e /me)
+        run: |
+          URL=$(aws apigatewayv2 get-apis --region "${{ env.AWS_REGION }}" \
+            --query "Items[?Name=='oficina-mecanica-${{ github.event.inputs.environment }}-api'].ApiEndpoint | [0]" \
+            --output text)
+
+          if [ -z "$URL" ] || [ "$URL" = "None" ]; then
+            echo "::warning::API Gateway não encontrada — rode o pipeline do serverless para o Swagger linkar /auth/cpf e /me corretamente."
+          else
+            echo "API_GATEWAY_URL=$URL" >> "$GITHUB_ENV"
+            echo "URL resolvida: $URL"
+          fi
+
       - name: Resolver URI da imagem no Docker Hub
         id: image
         run: |
@@ -125,6 +140,7 @@ jobs:
             --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
             --from-literal=DATABASE_URL="$DB_URL" \
             --from-literal=NEW_RELIC_LICENSE_KEY="${{ secrets.NEW_RELIC_LICENSE_KEY }}" \
+            --from-literal=API_GATEWAY_URL="${{ env.API_GATEWAY_URL }}" \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Instalar metrics-server (necessário para HPA)
