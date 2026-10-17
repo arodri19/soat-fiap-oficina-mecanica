@@ -1,5 +1,18 @@
 # Oficina Mecânica — Backend
 
+> **Fase 4:** esta aplicação monolítica foi decomposta em microsserviços, cada um com
+> repositório, banco, pipeline e deploy próprios, coordenados por uma **Saga orquestrada**:
+>
+> | Microsserviço | Repositório |
+> |---|---|
+> | OS Service (orquestrador da saga) | [soat-fiap-oficina-mecanica-os-service](https://github.com/arodri19/soat-fiap-oficina-mecanica-os-service) |
+> | Billing Service (orçamento + Mercado Pago) | [soat-fiap-oficina-mecanica-billing-service](https://github.com/arodri19/soat-fiap-oficina-mecanica-billing-service) |
+> | Execution & Production Service | [soat-fiap-oficina-mecanica-exec-prod](https://github.com/arodri19/soat-fiap-oficina-mecanica-exec-prod) |
+>
+> Este repositório permanece como histórico das Fases 1–3 (o código de clientes, veículos,
+> catálogo e OS evoluiu no os-service). Arquitetura da Fase 4:
+> [os-service/docs/arquitetura.md](https://github.com/arodri19/soat-fiap-oficina-mecanica-os-service/blob/fase04/docs/arquitetura.md).
+
 Backend em **Node.js / Express** com **PostgreSQL** e **Prisma ORM**, construído com **Clean Architecture** e práticas de **Clean Code**.
 
 ## Sobre o Projeto e Objetivos da Fase 02
